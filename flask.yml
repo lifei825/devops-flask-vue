@@ -1,0 +1,151 @@
+apiVersion: v1
+kind: Template
+labels:
+  application: flask
+  createdBy: lifei5
+metadata:
+  annotations:
+    description: "flask-api"
+    iconClass: icon-flask
+    tags: python
+  creationTimestamp: null
+  name: flask
+objects:
+- apiVersion: v1
+  kind: BuildConfig
+  metadata:
+    name: ${APPLICATION_NAME}
+  spec:
+    output:
+      to:
+        kind: ImageStreamTag
+        name: ${APPLICATION_NAME}:latest
+    source:
+      git:
+        ref: ${GIT_REF}
+        uri: ${GIT_URI}
+      sourceSecret:
+        name: gitbasicsecret
+      type: Git
+    strategy:
+      dockerStrategy:
+        forcePull: true
+        from:
+          kind: DockerImage
+          name: ${IMAGE_NAME}
+        noCache: true
+      type: Docker
+    triggers:
+    - generic:
+        secret: ${Generic_TRIGGER_SECRET}
+      type: Generic
+- apiVersion: v1
+  kind: ImageStream
+  metadata:
+    name: ${APPLICATION_NAME}
+  spec:
+    dockerImageRepository: ""
+    tags:
+    - name: latest
+- apiVersion: v1
+  kind: DeploymentConfig
+  metadata:
+    labels:
+      deploymentConfig: ${APPLICATION_NAME}
+    name: ${APPLICATION_NAME}
+  spec:
+    replicas: 1
+    selector:
+      deploymentConfig: ${APPLICATION_NAME}
+    strategy:
+      type: Rolling
+    template:
+      metadata:
+        labels:
+          deploymentConfig: ${APPLICATION_NAME}
+      spec:
+        containers:
+        - env:
+          - name: APPLICATION_NAME
+            value: ${APPLICATION_NAME}
+          image: ${APPLICATION_NAME}:latest
+          imagePullPolicy: IfNotPresent
+          name: ${APPLICATION_NAME}
+          ports:
+          - containerPort: 80
+            name: http
+            protocol: TCP
+          readinessProbe:
+            failureThreshold: 3
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            successThreshold: 1
+            tcpSocket:
+              port: 80
+            timeoutSeconds: 60
+          resources:
+            limits:
+              cpu: ${LIMIT_CPU}m
+              memory: ${LIMIT_MEMORY}Mi
+            requests:
+              cpu: ${LIMIT_CPU}m
+              memory: ${LIMIT_MEMORY}Mi
+          securityContext:
+            capabilities: {}
+            privileged: true
+          terminationMessagePath: /dev/termination-log
+        dnsPolicy: ClusterFirst
+        nodeSelector:
+          nodetype: ${NODETYPE}
+        restartPolicy: Always
+    triggers:
+    - imageChangeParams:
+        automatic: true
+        containerNames:
+        - ${APPLICATION_NAME}
+        from:
+          kind: ImageStreamTag
+          name: ${APPLICATION_NAME}:latest
+      type: ImageChange
+    - type: ConfigChange
+- apiVersion: v1
+  kind: Service
+  metadata:
+    annotations:
+      description: 应用的服务
+    name: ${APPLICATION_NAME}
+  spec:
+    ports:
+    - name: 80-tcp
+      port: 80
+      protocol: TCP
+      targetPort: 80
+    selector:
+      deploymentConfig: ${APPLICATION_NAME}
+    type: NodePort
+parameters:
+- description: 应用名称
+  name: APPLICATION_NAME
+  value: "flask-api"
+- description: "git源码路径"
+  name: GIT_URI
+  value: "http://gitlab-console.asiainfo.com/lifei5/paas_platform.git"
+- description: 选用的git分支，默认为master
+  name: GIT_REF
+  value: master
+- description: 选用Docker镜像版本
+  name: IMAGE_NAME
+  value: 10.1.245.137/uwsgi-nginx-flask:flask-python3.5
+- description: "gitlab webhook授权密码，由8位数字字母组成，若为空则由系统生成"
+  from: '[a-zA-Z0-9]{8}'
+  generate: expression
+  name: Generic_TRIGGER_SECRET
+- description: "设置最大cpu资源,单位MHZ."
+  name: LIMIT_CPU
+  value: "200"
+- description: "设置最大内存资源,单位MiB."
+  name: LIMIT_MEMORY
+  value: "500"
+- description: 要部署的节点集群.
+  name: NODETYPE
+  value: normal

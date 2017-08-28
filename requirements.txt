@@ -1,0 +1,17 @@
+redis
+flask
+Flask-SQLAlchemy
+Flask-Migrate
+Flask-Security
+Flask-Script
+Flask-RESTful
+Flask-KVSession
+flask-cors
+# flask-mongoengine
+flask_jwt
+flasgger
+flask_pymongo
+mysqlclient
+requests
+celery
+ldap3
