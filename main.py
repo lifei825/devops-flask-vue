@@ -14,8 +14,17 @@ app = create_app('config.settings.{0}'.format(config_name))
 app.register_blueprint(get_auth_resources(), url_prefix='/api/v1')
 app.register_blueprint(module)
 
+home_page = Blueprint('home', __name__, template_folder='./vue-init/dist', static_folder='./vue-init/dist/static')
 
-@app.route("/")
+
+@home_page.route('/')
+def home():
+    return render_template('index.html')
+
+app.register_blueprint(home_page)
+
+
+@app.route("/test")
 def hello():
     from flask_login import current_user
     # print(current_user.is_authenticated, current_user.__dict__)
@@ -25,7 +34,7 @@ def hello():
     # response.set_cookie("name", "xxx")
     # print(response)
     # print(session.items(), session.get('user_id'))
-    return render_template('index-vue.html', name='lf')
+    return render_template('index.html')
     # return render_template('auth.html', name='lf')
     # return "Hello World from Flask"
 

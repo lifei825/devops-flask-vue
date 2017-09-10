@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+
+<div onclick="outSideWork()" id="outSide" style="width:100px; height:100px; background:#000; padding:50px">
+<div onclick="inSideWork()" id="inSide" style="width:100px; height:100px; background:#CCC"></div>
+</div>
+<script type="text/javascript">
+function outSideWork()
+{
+    alert('My name is outSide,I was working...');
+}
+
+function inSideWork()
+{
+    alert('My name is inSide,I was working...');
+}
+
+//因为下面程序自动激活单击事件，有些浏览器不允许，所以请单击灰色盒子，从这里开始下命令，这样因为冒泡的原因，黑色大盒子也会收到单击事件，并调用了自己的处理程序。如果还有更多盒子嵌套，一样道理。
+
+/*
+function bossOrder()
+{
+    document.getElmentById('inSide').click();
+}
+bossOrder();
+*/
+</script>
+
+<body>
+
+</body>
+</html>

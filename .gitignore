@@ -5,6 +5,7 @@
 *.log
 dist
 #build
+node_modules/
 
 site.pkl
 test*.py

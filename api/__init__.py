@@ -12,8 +12,8 @@ from flasgger import Swagger
 from flask_jwt import JWT
 
 
-def create_app(config_name):
-    app = Flask(__name__, static_folder='../vue-init/dist/static')
+def create_app(config_name, template_folder=None, static_folder=None):
+    app = Flask(__name__, static_folder=static_folder, template_folder=template_folder)
     app.config.from_object(config_name)
 
     # jwt初始化
