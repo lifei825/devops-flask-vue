@@ -2,9 +2,9 @@
 <html lang="en">
 {#<script src="https://unpkg.com/vue"></script>#}
 <script src="https://cdn.bootcss.com/vue/2.4.2/vue.min.js"></script>
-{#<script src="https://cdn.jsdelivr.net/npm/axios@0.12.0/dist/axios.min.js"></script>#}
+<script src="https://cdn.jsdelivr.net/npm/axios@0.12.0/dist/axios.min.js"></script>
 
-{#<script src="https://cdn.jsdelivr.net/npm/lodash@4.13.1/lodash.min.js"></script>#}
+<script src="https://cdn.jsdelivr.net/npm/lodash@4.13.1/lodash.min.js"></script>
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
@@ -218,8 +218,8 @@
             answer: 'i cannot give you an answer until you ask a question!'
         },
         watch: {
-          question: function (newQuestion) {
-              this.answer = 'Waiting for you to stop typing...';
+          question: function (newData, oldData) {
+              this.answer = 'Waiting for you to stop typing... newdata:'+newData+', old data:'+oldData;
               this.getAnswer()
           }  
         },

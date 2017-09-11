@@ -48,7 +48,6 @@
     }
     .layout-ceiling-left{
       float: left;
-      color: #00A000;
       height: 20px;
       width: 20px;
       margin-left: 15px;
@@ -96,13 +95,12 @@
                     <router-link to="/">
                     <MenuItem name="服务器管理">
                         <Icon type="ios-navigate" :size="iconSize"></Icon>
-                        <!--<span class="layout-text" ><router-link to="/service">选项 1</router-link></span>-->
                         <span class="layout-text">服务器管理</span>
                     </MenuItem>
                     </router-link>
 
                     <router-link to="/auth">
-                    <MenuItem name="权限管理" >
+                    <MenuItem name="权限管理"  v-show="is_show.auth">
                         <Icon type="ios-keypad" :size="iconSize"></Icon>
                         <span class="layout-text">权限管理</span>
                     </MenuItem>
@@ -141,19 +139,18 @@
 </template>
 <script>
     export default {
-        name: 'test-name',
         data () {
             return {
                 spanLeft: 5,
                 spanRight: 19,
-                select_name: '服务器管理'
+                select_name: '服务器管理',
+                is_show: {auth: true}
             }
         },
-        delimiters: ['${', '}'],
         computed: {
             iconSize () {
                 return this.spanLeft === 5 ? 14 : 24;
-            },
+            }
         },
         methods: {
             toggleClick () {
@@ -165,9 +162,9 @@
                     this.spanRight = 19;
                 }
             },
-          change_menu_name (name) {
+            change_menu_name (name) {
             return this.select_name = name
-          }
+            }
         }
     }
 </script>

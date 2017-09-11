@@ -1,6 +1,5 @@
 import Vue from 'vue'
 import Router from 'vue-router'
-import Hello from '@/components/Hello'
 import Layout from '@/components/layout'
 import service from '@/components/service.vue'
 import auth from '@/components/auth.vue'
@@ -17,18 +16,23 @@ const router = new Router({
   routes: [
     {
       path: '/',
-      name: 'home',
       component: Layout,
       children: [
         {
           path: '/',
           name: '服务器',
-          component: service
+          component: service,
+          meta: {
+            title: 'Server'
+          }
         },
         {
           path: '/auth',
           name: '权限管理',
-          component: auth
+          component: auth,
+          meta: {
+            title: 'Auth'
+          }
         }
       ]
     },

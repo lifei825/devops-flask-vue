@@ -97,7 +97,7 @@ def sso_required(f):
 
 # jwt 验证用户名密码
 def authenticate(username, password):
-    user = User.query.filter_by(username=username).first()
+    user = User.query.filter_by(email=username).first()
     if user and user.verify_password(password):
         return user
 

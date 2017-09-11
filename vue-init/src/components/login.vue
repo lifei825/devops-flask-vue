@@ -100,14 +100,14 @@
     </div>
 </template>
 <script>
-    import axios from 'axios'
+    import { getUserInfo, userLogin } from '../api/api';
 
     export default {
       data () {
         return {
           formInline: {
-            user: '',
-            password: ''
+            user: 'lifei',
+            password: '123'
           },
           ruleInline: {
             user: [
@@ -115,21 +115,24 @@
             ],
             password: [
               { required: true, message: '请填写密码', trigger: 'blur' },
-              { type: 'string', min: 6, message: '密码长度不能小于6位', trigger: 'blur' }
+              { type: 'string', min: 2, message: '密码长度不能小于6位', trigger: 'blur' }
             ]
-          }
+          },
+          response: ''
         }
       },
       methods: {
         handleSubmit(name) {
           this.$refs[name].validate((valid) => {
             if (valid) {
-              axios.get('http://127.0.0.1:8082/api/v1/user/lf').then(function (response) {
-                console.log(response.data);
-                console.log('state: '+ response.data.state)
-              }).catch(function (error) {
-                console.log(error)
-              });
+//              getUserInfo(this.formInline.user).then((res) => {
+//                this.response = res.data})
+
+              userLogin(this.formInline.user, this.formInline.password).then((res) => {
+                console.log(res.data.result)
+                console.log(res.data.result.token)
+              })
+              console.log("lll:"+this.response)
               this.$Message.success('提交成功!');
 //              this.$router.push('/');
             } else {

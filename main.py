@@ -34,8 +34,8 @@ def hello():
     # response.set_cookie("name", "xxx")
     # print(response)
     # print(session.items(), session.get('user_id'))
-    return render_template('index.html')
-    # return render_template('auth.html', name='lf')
+    # return render_template('index.html')
+    return render_template('auth.html', name='lf')
     # return "Hello World from Flask"
 
 

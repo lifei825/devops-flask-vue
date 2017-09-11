@@ -26,26 +26,24 @@ class Auth(Resource):
     def __init__(self):
         super(Auth, self).__init__()
 
-    @sso_required
-    @login_required
-    def get(self):
+    def post(self):
         """
-        sso单点登录
+        用户登录
         ---
         tags:
         - AUTH
         parameters:
-          - in: body
-            name: ticket
+          - in: formData
+            name: email
             type: string
-            required: true
-          - in: body
-            name: service
+            description: "邮箱"
+          - in: formData
+            name: password
             type: string
-            required: true
+            description: "密码"
         responses:
           200:
-            description: sso认证登录
+            description: 用户认证登录
             schema:
               properties:
                 result:
@@ -61,19 +59,22 @@ class Auth(Resource):
                     "state": "ok"
                 }
         """
-        username = None
+        email = None
         token = None
         exp = None
         state = STATE_OK
         try:
-            username = current_user.username
-            password = current_app.config.get('PASSWORD_KEY')
+            print(request.form.__dict__)
+            email = request.values.get('email', None)
+            password = request.values.get('password', None)
             _secret = current_app.config.get('SECRET_KEY')
+            print('e p:', email, password)
 
             with current_app.test_client() as c:
                 resp = c.post('/auth', headers={'Content-Type': 'application/json'},
-                              data=json.dumps({"username": username, "password": password}))
+                              data=json.dumps({"username": email, "password": password}))
                 data = json.loads(resp.data.decode('utf8'))
+                print("data:", data)
 
             token = data.get('access_token', None)
             exp = jwt.decode(token, key=_secret).get("exp")
@@ -82,7 +83,7 @@ class Auth(Resource):
             logging.error("get token error: %s." % str(e))
             state = isinstance(e, ErrorCode) and e or ErrorCode(1, "unknown error:" + str(e))
 
-        return {'result': {'username': username, 'token': token, 'exp': exp}, 'state': state.message}, state.eid
+        return {'result': {'username': email, 'token': token, 'exp': exp}, 'state': state.message}, state.eid
 
 
 class Users(Resource):
