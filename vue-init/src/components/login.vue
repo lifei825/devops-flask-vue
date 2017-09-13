@@ -117,8 +117,7 @@
               { required: true, message: '请填写密码', trigger: 'blur' },
               { type: 'string', min: 2, message: '密码长度不能小于6位', trigger: 'blur' }
             ]
-          },
-          response: ''
+          }
         }
       },
       methods: {
@@ -129,16 +128,22 @@
 //                this.response = res.data})
 
               userLogin(this.formInline.user, this.formInline.password).then((res) => {
-                console.log(res.data.result)
-                console.log(res.data.result.token)
+                console.log('result:', res.data.result);
+                this.$store.dispatch('save_token', {
+                  'user': res.data.result.username,
+                  'token': res.data.result.token
+                });
+                console.log("store save:"+this.$store.state.loginInfo)
               })
-              console.log("lll:"+this.response)
+              console.log('doto:', this.$store.getters.doneTodos[0].text);
               this.$Message.success('提交成功!');
 //              this.$router.push('/');
-            } else {
-              this.$Message.error('表单验证失败!');
-        }
-        })
+              }
+            else
+              {
+                this.$Message.error('表单验证失败!');
+              }
+          })
         }
       }
 

@@ -80,11 +80,11 @@
         <div class="layout-ceiling">
             <div class="layout-ceiling-left"><img src="../assets/logo.png" height="20px" width="20px"></div>
             <div class="layout-ceiling-main">
-                <a href="#">注册登录</a> |
+                <a href="#/login">注册登录</a> |
                 <a href="#">帮助中心</a> |
                 <a href="#">安全中心</a> |
                 <a href="#">服务大厅</a> |
-                <router-link to="/service">选项 1</router-link>
+                <a href="#">退出登录</a> |
             </div>
         </div>
         <Row type="flex">
@@ -138,6 +138,8 @@
     </div>
 </template>
 <script>
+    import store from '../store'
+
     export default {
         data () {
             return {
@@ -163,7 +165,8 @@
                 }
             },
             change_menu_name (name) {
-            return this.select_name = name
+                console.log('layout save:', this.$store.getters.loginInfo.user);
+                return this.select_name = name
             }
         }
     }

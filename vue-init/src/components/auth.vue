@@ -1,6 +1,6 @@
 <template>
   <div class="layout-content">
-  <div class="layout-content-main">this is auth</div>
+  <div class="layout-content-main">this is auth {{msg}}</div>
   </div>
 </template>
 

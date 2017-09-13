@@ -62,6 +62,7 @@
     <button v-on:click="reverseMessage">逆转消息aa</button>
     <input v-on:keyup.13="reverseMessage">逆转消息 enter</input>
     <button v-on:keyup.13="reverseMessage">逆转消息 enter</button>  // tab键选中后生效
+    <p v-text="reverseMessage"></p>
 
 </div>
 
@@ -69,6 +70,7 @@
     <p>${addStr}</p>
     <p>${message | jias}</p>
     <input v-model="message">
+    <p v-text="addStr"></p>
 </div>
 
  <div id="app-7">
