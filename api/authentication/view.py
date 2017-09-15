@@ -26,6 +26,38 @@ class Auth(Resource):
     def __init__(self):
         super(Auth, self).__init__()
 
+    @jwt_required()
+    def put(self):
+        """
+        token验证
+        ---
+        tags:
+        - AUTH
+        parameters:
+          - in: header
+            name: Authorization
+            type: string
+            required: true
+            description: "JWT <token>"
+        responses:
+          200:
+            description: token验证
+            schema:
+              properties:
+                result:
+                  type: string
+                  default: ok
+            examples:
+                {
+                    "result": {
+                        "verify": True,
+                    },
+                    "state": "ok"
+                }
+        """
+
+        return {'result': {'verify': True}, 'state': 'ok'}, 200
+
     def post(self):
         """
         用户登录

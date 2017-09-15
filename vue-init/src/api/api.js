@@ -1,8 +1,8 @@
 import axios from 'axios'
 import Qs from 'qs'
 
-export const baseUrl = 'http://127.0.0.1:8082';
-// export const baseUrl = '';
+// export const baseUrl = 'http://127.0.0.1:8082';
+export const baseUrl = '';
 
 export const getUserInfo = (username) => {
   return axios({
@@ -25,9 +25,20 @@ export const userLogin = (email, password) => {
   });
 };
 
+export const checkToken = (token) => {
+  return axios({
+    method: 'PUT',
+    url: baseUrl + '/api/v1/login',
+    headers: {
+      'Authorization': 'JWT '+token
+    }
+  })
+};
+
 
 
 export default {
   getUserInfo,
-  userLogin
+  userLogin,
+  checkToken
 }

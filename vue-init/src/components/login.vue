@@ -124,20 +124,18 @@
         handleSubmit(name) {
           this.$refs[name].validate((valid) => {
             if (valid) {
-//              getUserInfo(this.formInline.user).then((res) => {
-//                this.response = res.data})
-
               userLogin(this.formInline.user, this.formInline.password).then((res) => {
-                console.log('result:', res.data.result);
                 this.$store.dispatch('save_token', {
                   'user': res.data.result.username,
                   'token': res.data.result.token
                 });
-                console.log("store save:"+this.$store.state.loginInfo)
               })
-              console.log('doto:', this.$store.getters.doneTodos[0].text);
-              this.$Message.success('提交成功!');
-//              this.$router.push('/');
+
+              var vm = this;
+              setTimeout(function () {
+                vm.$Message.success('提交成功!');
+                vm.$router.push('/');
+              }, 1000);
               }
             else
               {

@@ -1,11 +1,4 @@
 <style scoped>
-
-    html, body {
-        height: 100%;
-        margin: 0px;
-        padding: 0px;
-    }
-
     .layout{
         border: 1px solid #d7dde4;
         background: #f5f7f9;
@@ -17,7 +10,7 @@
         padding: 10px 15px 0;
     }
     .layout-content{
-        min-height: 550px;
+        min-height: 650px;
         margin: 15px;
         overflow: hidden;
         background: #fff;
@@ -48,8 +41,8 @@
     }
     .layout-ceiling-left{
       float: left;
-      height: 20px;
-      width: 20px;
+      height: auto;
+      width: auto;
       margin-left: 15px;
     }
     .layout-ceiling-main a{
@@ -63,28 +56,29 @@
     }
     .layout-ceiling{
         background: #464c5b;
-        padding: 10px 0;
+        padding: 5px 0;
         overflow: hidden;
     }
     .layout-ceiling-main{
         float: right;
         margin-right: 15px;
     }
-    .layout-ceiling-main a{
-        color: #9ba7b5;
-    }
 
 </style>
 <template>
     <div class="layout" :class="{'layout-hide-text': spanLeft < 5}">
         <div class="layout-ceiling">
-            <div class="layout-ceiling-left"><img src="../assets/logo.png" height="20px" width="20px"></div>
+            <div class="layout-ceiling-left">
+              <img src="../assets/logo.png" height="auto" width="30px">
+            </div>
+            <div class="layout-ceiling-left"><h2 style="color: #0b97c4;">Super运维平台</h2></div>
+
             <div class="layout-ceiling-main">
                 <a href="#/login">注册登录</a> |
-                <a href="#">帮助中心</a> |
+                <!--<a href="#">帮助中心</a> |-->
                 <a href="#">安全中心</a> |
                 <a href="#">服务大厅</a> |
-                <a href="#">退出登录</a> |
+                <Button v-on:click="logoutClick" size="small"><Icon type="log-out"></Icon>登出</Button>|
             </div>
         </div>
         <Row type="flex">
@@ -114,17 +108,32 @@
             </Col>
             <Col :span="spanRight">
                 <div class="layout-header">
-                    <Button type="text" @click="toggleClick">
-                        <Icon type="navicon" size="32"></Icon>
+                  <Row type="flex" align="middle">
+
+                    <Col span="2">
+                      <Button type="text" @click="toggleClick">
+                          <Icon type="navicon" size="32"></Icon>
+                      </Button>
+                    </Col>
+                    <!-- 选项名称 -->
+                    <Col span="5"><h1 v-text="select_name">test</h1></Col>
+                    <!-- 搜索栏 -->
+                    <Col span="6" offset="4">
+                      <Input v-model="value13" >
+                        <span slot="prepend">Search</span>
+                        <Button slot="append" icon="ios-search"></Button>
+                      </Input>
+                    </Col>
+                    <!-- 项目选择 -->
+                    <Col span="2" offset="5">
+                    <Button type="primary" shape="circle">
+                      圆角按钮
                     </Button>
+                    </Col>
+
+                  </Row>
                 </div>
-                <div class="layout-breadcrumb">
-                    <Breadcrumb>
-                        <BreadcrumbItem href="/">首页</BreadcrumbItem>
-                        <BreadcrumbItem href="#">应用中心</BreadcrumbItem>
-                        <BreadcrumbItem v-text="select_name"></BreadcrumbItem>
-                    </Breadcrumb>
-                </div>
+
                 <div class="layout-content">
                     <div class="layout-content-main">内容区域
                       <router-view></router-view>
@@ -146,7 +155,8 @@
                 spanLeft: 5,
                 spanRight: 19,
                 select_name: '服务器管理',
-                is_show: {auth: true}
+                is_show: {auth: true},
+                value13: ''
             }
         },
         computed: {
@@ -167,6 +177,13 @@
             change_menu_name (name) {
                 console.log('layout save:', this.$store.getters.loginInfo.user);
                 return this.select_name = name
+            },
+            logoutClick () {
+              this.$store.dispatch('remove_token');
+              if (typeof(this.$store.state.loginInfo.token) === 'undefined') {
+                console.log("remove: ok", this.$store.state.loginInfo)
+                this.$router.push({path: 'login'})
+              }
             }
         }
     }
