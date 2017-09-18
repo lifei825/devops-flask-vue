@@ -11,6 +11,7 @@ from utils.ext import login_manager
 from api.authentication.url import get_auth_resources
 from api.authentication.view import module
 from os import environ
+import logging
 
 
 config_name = environ.get("FLASK_CONFIG", 'Devops')
@@ -31,31 +32,36 @@ manager.add_command('db', MigrateCommand)
 
 @manager.command
 def create_user():
-    # db.drop_all()
-    db.create_all()
 
-    g1 = Groups(name="test")
-    g2 = Groups(name="admin")
-    db.session.add(g1)
-    db.session.add(g2)
-    db.session.commit()
-    db.session.close()
+    try:
+        # db.drop_all()
+        db.create_all()
 
-    for permissions, (name, desc) in Permission.PERMISSION_MAP.items():
-        user_datastore.find_or_create_role(name=name,
-                                           description=desc,
-                                           permissions=permissions,
-                                           groups=Groups.query.filter_by(name="admin").first()
-                                           )
+        g1 = Groups(name="test")
+        g2 = Groups(name="admin")
+        db.session.add(g1)
+        db.session.add(g2)
+        db.session.commit()
+        db.session.close()
 
-    for email, username, passwd, permissions in (
-            ('lifei', 'lifei', '123', (Permission.LOGIN, Permission.EDITOR)),
-            ('admin', 'admin', 'admin123_2017', (Permission.ADMIN,))
-    ):
-        user_datastore.create_user(email=email, username=username, password=passwd)
-        for permission in permissions:
-            user_datastore.add_role_to_user(email, Permission.PERMISSION_MAP[permission][0])
-    db.session.commit()
+        for permissions, (name, desc) in Permission.PERMISSION_MAP.items():
+            user_datastore.find_or_create_role(name=name,
+                                               description=desc,
+                                               permissions=permissions,
+                                               groups=Groups.query.filter_by(name="admin").first()
+                                               )
+
+        for email, username, passwd, permissions in (
+                ('lifei', 'lifei', '123', (Permission.LOGIN, Permission.EDITOR)),
+                ('admin', 'admin', 'admin123_2017', (Permission.ADMIN,))
+        ):
+            user_datastore.create_user(email=email, username=username, password=passwd)
+            for permission in permissions:
+                user_datastore.add_role_to_user(email, Permission.PERMISSION_MAP[permission][0])
+        db.session.commit()
+
+    except Exception as e:
+        logging.error("already init db: %s" % e)
 
 # start
 

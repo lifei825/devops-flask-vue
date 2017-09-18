@@ -16,7 +16,10 @@
 ![](vue-init/src/assets/运维平台.png)<br>
 
 ## Docker部署
-
+#### 构建镜像
+docker build -t ffwd/blog:latest .
+#### 启动服务
+docker-compose -f docker-compose.deploy.yaml up
 
 Python Web 开发
 ==================
