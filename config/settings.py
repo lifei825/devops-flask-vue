@@ -45,12 +45,12 @@ class Devops(Config):
 
 class DevopsProduction(Config):
 
-    SQLALCHEMY_DATABASE_URI = 'mysql://user:passwd@121.121.121.121:3306/database?charset=utf8'
+    SQLALCHEMY_DATABASE_URI = 'mysql://root:passwd@mysql:3306/backend?charset=utf8'
     SQLALCHEMY_TRACK_MODIFICATIONS = True
 
     # celery config
-    BROKER_URL = 'redis://:7788@172.30.34.207:6379/13'
-    CELERY_RESULT_BACKEND = 'redis://:7788@172.30.34.207:6379/14   '
+    BROKER_URL = 'redis://redis:6379/13'
+    CELERY_RESULT_BACKEND = 'redis://redis:6379/14   '
     CELERY_TASK_SERIALIZER = 'json'
     CELERY_RESULT_SERIALIZER = 'json'
     CELERY_TASK_RESULT_EXPIRES = 60 * 60 * 24

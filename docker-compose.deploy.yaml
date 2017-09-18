@@ -1,0 +1,21 @@
+version: '2'
+services:
+  devops:
+    image: devops:latest
+    depends_on:
+      - redis
+      - mysql
+    ports:
+      - "8080:80"
+    environment:
+      FLASK_CONFIG: "DevopsProduction"
+  redis:
+    image: redis:4.0-alpine
+  mysql:
+    image: mysql:5.7.19
+    environment:
+      MYSQL_ROOT_PASSWORD: "passwd"
+      MYSQL_DATABASE: "backend"
+    volumes:
+      - /data/mysql:/var/lib/mysql
+
