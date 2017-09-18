@@ -22,7 +22,7 @@ Python Web 开发
 ## 学习资料参考
  - [github官网](https://github.com/pallets/flask)
  - [flask中文手册 0.10 文档](http://docs.pythontab.com/flask/flask0.10/index.html)
- - <<[Python Web开发实战](https://github.com/dongweiming/web_develop)>>作者是国内应用python最大的豆瓣开发大牛
+ - <<[Python Web开发实战](https://github.com/dongweiming/web_develop)>>
 
 ## 安装python3.5(建议使用mac或centos7系统,安装第三方模块会更顺利)
 ```
