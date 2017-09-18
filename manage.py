@@ -15,7 +15,7 @@ import logging
 
 
 config_name = environ.get("FLASK_CONFIG", 'Devops')
-app = create_app(config_name)
+app = create_app('config.settings.{0}'.format(config_name))
 
 # 蓝图功能, 注册api url
 app.register_blueprint(get_auth_resources(), url_prefix='/api/v1')
