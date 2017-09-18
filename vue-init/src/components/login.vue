@@ -122,25 +122,27 @@
       },
       methods: {
         handleSubmit(name) {
+          this.$Loading.start();
           this.$refs[name].validate((valid) => {
+            console.log(valid);
             if (valid) {
               userLogin(this.formInline.user, this.formInline.password).then((res) => {
                 this.$store.dispatch('save_token', {
                   'user': res.data.result.username,
-                  'token': res.data.result.token
+                  'token': res.data.result.token,
+                  'src': res.data.result.src
                 });
+                this.$Message.success('提交成功!');
+                this.$router.push('/');
+                this.$Loading.finish()
+              }).catch(res => {
+                console.log('error:', res);
+                this.$Message.error('用户名或密码验证失败!');
+                this.$Loading.error()
               })
-
-              var vm = this;
-              setTimeout(function () {
-                vm.$Message.success('提交成功!');
-                vm.$router.push('/');
-              }, 1000);
-              }
-            else
-              {
-                this.$Message.error('表单验证失败!');
-              }
+            } else {
+              this.$Message.error('表单验证失败!');
+            }
           })
         }
       }

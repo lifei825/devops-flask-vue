@@ -8,7 +8,8 @@ export default new Vuex.Store({
   state: {
     loginInfo: {
       token: null,
-      user: null
+      user: 'Guest',
+      src: ''
     },
     todos: [
       {id:1, text: '1 text', done: true},

@@ -68,7 +68,7 @@ class User(db.Model, UserMixin):
         return all_perms & permissions == permissions
 
     def can_admin(self):
-        return self.can(Permission.ADMIN)
+        return self.can(gid=1, permissions=Permission.ADMIN)
 
     # password不可读
     @property

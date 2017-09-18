@@ -60,30 +60,23 @@ const router = new Router({
 
 router.beforeEach((to, from, next) => {
   let loginInfo = store.getters.loginInfo;
-  console.log("loginfo bef: ", loginInfo);
 
   if (to.meta.auth && loginInfo) {
     let token = loginInfo.token;
-    console.log("token bef: ", token);
-    console.log("da yin patj:", from.path);
 
     checkToken(token).then((res) => {
       let verify = res.data.result.verify;
-      console.log("check res:"+verify);
       if (verify) {
         next()
       } else {
         next("/login")
       }
     }).catch(res => {
-      console.log(res);
       next('/login')
     });
   } else if (!loginInfo && to.path != '/login'){
-    console.log("2 c", to.path);
     next('/login')
   } else {
-    console.log("3 c");
     next()
     
   }

@@ -2,9 +2,9 @@
 <html lang="en">
 {#<script src="https://unpkg.com/vue"></script>#}
 <script src="https://cdn.bootcss.com/vue/2.4.2/vue.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/axios@0.12.0/dist/axios.min.js"></script>
+{#<script src="https://cdn.jsdelivr.net/npm/axios@0.12.0/dist/axios.min.js"></script>#}
 
-<script src="https://cdn.jsdelivr.net/npm/lodash@4.13.1/lodash.min.js"></script>
+{#<script src="https://cdn.jsdelivr.net/npm/lodash@4.13.1/lodash.min.js"></script>#}
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
@@ -52,7 +52,10 @@
 
 <div id="app-4">
     <ol>
-        <li v-for="todo in todos" v-text="todo.text"></li>
+        <li v-for="todo in todos" v-text="todo.text" v-if="todo.text.constructor != Array"></li>
+        <template v-for="todo in todos" v-if="todo.text.constructor == Array">
+            <li v-for="todo2 in todo.text" v-text="todo2.test"></li>
+        </template>
         <li>{{ name }}</li>
     </ol>
 </div>
@@ -155,7 +158,10 @@
             todos: [
                 {text: "学习 JavaScript"},
                 {text: "学习 vue"},
-                {text: "整个牛项目"}
+                {text: "整个牛项目"},
+                {text: [{test: 't1'}, {test:'t2'}]},
+                {text: [{test: '2-t1'}, {test:'2-t2'}]},
+
             ],
             dicts: {}
         }

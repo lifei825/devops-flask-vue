@@ -96,11 +96,9 @@ class Auth(Resource):
         exp = None
         state = STATE_OK
         try:
-            print(request.form.__dict__)
             email = request.values.get('email', None)
             password = request.values.get('password', None)
             _secret = current_app.config.get('SECRET_KEY')
-            print('e p:', email, password)
 
             with current_app.test_client() as c:
                 resp = c.post('/auth', headers={'Content-Type': 'application/json'},

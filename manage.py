@@ -48,8 +48,8 @@ def create_user():
                                            )
 
     for email, username, passwd, permissions in (
-            ('lifei', 'lf', '123', (Permission.LOGIN, Permission.EDITOR)),
-            ('admin', 'ad', '123', (Permission.ADMIN,))
+            ('lifei', '李飞', '123', (Permission.LOGIN, Permission.EDITOR)),
+            ('admin', '超级管理员', 'admin123_2017', (Permission.ADMIN,))
     ):
         user_datastore.create_user(email=email, username=username, password=passwd)
         for permission in permissions:

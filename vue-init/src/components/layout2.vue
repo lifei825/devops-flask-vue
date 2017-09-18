@@ -97,62 +97,97 @@
                 <Menu active-name="Overview" theme="dark" width="auto" v-on:on-select="change_menu_name" v-on:on-open-change="change_submenu_name" accordion>
                     <div class="layout-logo-left"></div>
 
-                    <template v-for="menu in menus" v-if="menu.path.constructor != Array">
-                      <router-link :to="menu.path">
-                        <MenuItem :name="menu.name">
-                            <Icon :type="menu.icon" :size="iconSize"></Icon>
-                            <span class="layout-text" v-text="menu.name"></span>
+                    <router-link to="/">
+                    <MenuItem name="Overview">
+                        <Icon type="speedometer" :size="iconSize"></Icon>
+                        <span class="layout-text">Overview</span>
+                    </MenuItem>
+                    </router-link>
+
+                    <Submenu name="资产管理">
+                      <template slot="title">
+                          <Icon type="ios-paper" :size="iconSize"></Icon>
+                          <span class="layout-text">资产管理</span>
+                      </template>
+
+                      <router-link to="/">
+                        <MenuItem name="服务器管理">
+                          <Icon type="ios-navigate" :size="iconSize"></Icon>
+                          <span class="layout-text">服务器管理</span>
                         </MenuItem>
                       </router-link>
-                    </template>
+                      <router-link to="/">
+                        <MenuItem name="IDC管理">
+                          <Icon type="ios-navigate" :size="iconSize"></Icon>
+                          <span class="layout-text">IDC管理</span>
+                        </MenuItem>
+                      </router-link>
+                    </Submenu>
 
-                    <template v-for="menu in menus" v-if="menu.path.constructor == Array">
-                      <Submenu :name="menu.name">
-                        <template slot="title">
-                            <Icon :type="menu.icon" :size="iconSize"></Icon>
-                            <span class="layout-text" v-text="menu.name"></span>
-                        </template>
-
-                        <template v-for="menu in menu.path">
-                          <router-link :to="menu.path">
-                            <MenuItem :name="menu.name">
-                              <Icon :type="menu.icon" :size="iconSize"></Icon>
-                              <span class="layout-text" v-text="menu.name"></span>
-                            </MenuItem>
-                          </router-link>
-                        </template>
-                      </Submenu>
+                  <Submenu name="1">
+                    <template slot="title">
+                        <Icon type="ios-paper"></Icon>
+                        内容管理
                     </template>
+                    <MenuItem name="1-1">文章管理</MenuItem>
+                  </Submenu>
+
+                    <router-link to="/auth">
+                    <MenuItem name="权限管理"  v-show="is_show.auth">
+                        <Icon type="ios-keypad" :size="iconSize"></Icon>
+                        <span class="layout-text">权限管理</span>
+                    </MenuItem>
+                    </router-link>
+
+                    <MenuItem name="3">
+                        <Icon type="ios-analytics" :size="iconSize"></Icon>
+                        <span class="layout-text">选项 3</span>
+                    </MenuItem>
                 </Menu>
             </Col>
             <!-- 右侧搜索工具栏, 主内容区-->
             <Col :span="spanRight">
                 <div class="layout-header">
                   <Row type="flex" align="middle">
+
                     <Col span="2">
                       <Button type="text" @click="toggleClick">
                           <Icon type="navicon" size="32"></Icon>
                       </Button>
                     </Col>
+                    <!-- 项目选择 -->
+                    <Col span="2" offset="9">
+                    <Button type="primary" shape="circle">圆角按钮</Button>
+                    </Col>
+                    <!-- 搜索栏 -->
+                    <Col span="6" offset="3">
+                      <Input v-model="searchValue" >
+                      <Select v-model="selectValue" slot="prepend" style="width: 80px">
+                        <Option value="ip">Ip地址</Option>
+                        <Option value="idc">机房</Option>
+                      </Select>
+                      <Button slot="append" v-on:click="searchClick" icon="ios-search"></Button>
+                      </Input>
+                    </Col>
+
                   </Row>
                 </div>
 
                 <div class="layout-breadcrumb">
                   <Breadcrumb>
                     <BreadcrumbItem href="#">首页</BreadcrumbItem>
-                    <BreadcrumbItem href="#"><span v-text="select_menu.show"></span></BreadcrumbItem>
-                    <BreadcrumbItem v-text="select_menu.sub">某应用</BreadcrumbItem>
+                    <BreadcrumbItem href="#"><span v-text="select_subname.show"></span></BreadcrumbItem>
+                    <BreadcrumbItem v-text="select_name">某应用</BreadcrumbItem>
                   </Breadcrumb>
                 </div>
 
                 <div class="layout-content">
-                    <div class="layout-content-main">
+                    <div class="layout-content-main">内容区域
                       <router-view></router-view>
                     </div>
                 </div>
-
                 <div class="layout-copy">
-                    2011-2016 &copy; Super
+                    2011-2016 &copy; TalkingData
                 </div>
             </Col>
         </Row>
@@ -165,25 +200,16 @@
             return {
                 spanLeft: 5,
                 spanRight: 19,
-                select_menu: {
-                  sub: 'Overview',
+                select_name: 'Overview',
+                select_subname: {
                   default: '应用中心',
                   cache: '',
                   show: '应用中心',
-                  single: ['Overview', '权限管理', '3']
+                  single_memu: ['Overview', '权限管理', '3']
                 },
                 is_show: {auth: true},
-                menus: [
-                  {name: 'Overview', icon:'speedometer', path: '/'},
-                  {name: '资产管理', icon:'ios-paper', path: [
-                    {name: '服务器管理', icon:'ios-navigate', path: '/'},
-                    {name: 'IDC管理', icon:'android-list', path: '/auth'}
-                  ]},
-                  {name: '权限管理', icon:'ios-paper', path: [
-                    {name: '用户管理', icon:'ios-navigate', path: '/'},
-                    {name: '项目管理', icon:'android-list', path: '/auth'}
-                  ]}
-                ]
+                searchValue: '',
+                selectValue: 'ip'
             }
         },
         computed: {
@@ -205,21 +231,24 @@
                 }
             },
             change_menu_name (name) {
-                if (this.select_menu.single.indexOf(name) == -1) {
-                  this.select_menu.show = this.select_menu.cache ? this.select_menu.cache : this.select_menu.default;
+                if (this.select_subname.single_memu.indexOf(name) == -1) {
+                  this.select_subname.show = this.select_subname.cache ? this.select_subname.cache : this.select_subname.default;
                 } else {
-                  this.select_menu.show = this.select_menu.default;
+                  this.select_subname.show = this.select_subname.default;
                 }
-                this.select_menu.sub = name
+              this.select_name = name
             },
             change_submenu_name (name) {
-                return this.select_menu.cache = name[0]
+                return this.select_subname.cache = name[0]
             },
             logoutClick () {
               this.$store.dispatch('remove_token');
               if (typeof(this.$store.state.loginInfo.token) === 'undefined') {
                 this.$router.push({path: 'login'})
               }
+            },
+            searchClick() {
+              this.$Message.info(this.searchValue+" to "+this.selectValue)
             }
         }
     }
