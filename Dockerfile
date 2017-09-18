@@ -9,5 +9,13 @@ RUN cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime; \
     dpkg-reconfigure -f noninteractive tzdata
 
 COPY . /app/
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
 #COPY ./config/supervisor_celery.conf /etc/supervisor/conf.d/
 RUN pip install --upgrade pip ; pip install -r requirements.txt -i https://pypi.doubanio.com/simple
+
+ENTRYPOINT ["/entrypoint.sh"]
+
+WORKDIR /app
+
+CMD ["/usr/bin/supervisord"]

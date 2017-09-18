@@ -10,9 +10,10 @@ from api.authentication.model import Permission, User, Role, Groups
 from utils.ext import login_manager
 from api.authentication.url import get_auth_resources
 from api.authentication.view import module
+from os import environ
 
 
-config_name = "config.settings.Devops"
+config_name = environ.get("FLASK_CONFIG", 'Devops')
 app = create_app(config_name)
 
 # 蓝图功能, 注册api url
@@ -48,8 +49,8 @@ def create_user():
                                            )
 
     for email, username, passwd, permissions in (
-            ('lifei', '李飞', '123', (Permission.LOGIN, Permission.EDITOR)),
-            ('admin', '超级管理员', 'admin123_2017', (Permission.ADMIN,))
+            ('lifei', 'lifei', '123', (Permission.LOGIN, Permission.EDITOR)),
+            ('admin', 'admin', 'admin123_2017', (Permission.ADMIN,))
     ):
         user_datastore.create_user(email=email, username=username, password=passwd)
         for permission in permissions:
