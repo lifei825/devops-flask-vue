@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-cd /app && python manage create_user
+cd /app && python manage.py create_user
 
 # Get the maximum upload file size for Nginx, default to 0: unlimited
 USE_NGINX_MAX_UPLOAD=${NGINX_MAX_UPLOAD:-0}
