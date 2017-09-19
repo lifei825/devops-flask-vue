@@ -69,13 +69,13 @@
             </div>
         </div>
         <div class="wrapper">
-          <h1>
+          <h1 v-text="login.title">
             Super运维平台
           </h1>
 
-          <div class="login">
+          <div class="login" v-if="login.display">
 
-            <Form ref="formInline" :model="formInline" :rules="ruleInline">
+            <Form ref="formInline" :model="formInline" :rules="ruleInline" show-message>
               <FormItem prop="user">
                 <Input type="text" v-model="formInline.user" placeholder="Username">
                 <Icon type="ios-person-outline" slot="prepend"></Icon>
@@ -89,7 +89,21 @@
               <FormItem>
                 <Button type="primary" @click="handleSubmit('formInline')">登录</Button>
               </FormItem>
-              <router-link to="/forgot_password" style="float: right">忘记密码</router-link>
+                <a v-on:click="loginDisplay('formInline')" style="float: right">忘记密码</a>
+            </Form>
+          </div>
+
+          <div class="login" v-else>
+            <Form ref="formInline" :model="formInline" :rules="ruleInline" show-message>
+              <FormItem prop="mail">
+                <Input type="text" v-model="formInline.mail" placeholder="mail">
+                <Icon type="ios-person-outline" slot="prepend"></Icon>
+                </Input>
+              </FormItem>
+              <FormItem>
+                <Button type="primary" @click="sendMail('formInline')">重设密码</Button>
+              </FormItem>
+              <a href="#"  @click="loginDisplay('formInline')" style="float: right">返回</a>
             </Form>
           </div>
 
@@ -107,7 +121,8 @@
         return {
           formInline: {
             user: 'lifei',
-            password: '123'
+            password: '123',
+            mail: null
           },
           ruleInline: {
             user: [
@@ -115,8 +130,16 @@
             ],
             password: [
               { required: true, message: '请填写密码', trigger: 'blur' },
-              { type: 'string', min: 2, message: '密码长度不能小于6位', trigger: 'blur' }
+              { type: 'string', min: 3, message: '密码长度不能小于3位', trigger: 'blur' }
+            ],
+            mail: [
+              { required: true, message: '请填写邮箱地址', trigger: 'blur' },
+              { type: 'email', message: '邮箱格式不正确', trigger: 'blur' }
             ]
+          },
+          login: {
+            display: true,
+            title: "Super运维平台"
           }
         }
       },
@@ -124,7 +147,6 @@
         handleSubmit(name) {
           this.$Loading.start();
           this.$refs[name].validate((valid) => {
-            console.log(valid);
             if (valid) {
               userLogin(this.formInline.user, this.formInline.password).then((res) => {
                 this.$store.dispatch('save_token', {
@@ -144,8 +166,21 @@
               this.$Message.error('表单验证失败!');
             }
           })
+        },
+        sendMail(name){
+          this.$Loading.start();
+          this.$refs[name].validate((valid) => {
+            if (valid) {console.log("print:", this.formInline)}
+          })
+        },
+        loginDisplay(name) {
+          if (this.login.display) {
+            this.login= {display: false, title: '重设密码'}
+          } else {
+            this.login = {display: true, title: 'Super运维平台'}
+          }
+          this.$refs[name].resetFields()
         }
       }
-
     }
 </script>

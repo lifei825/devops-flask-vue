@@ -53,12 +53,12 @@
     }
     .layout-ceiling{
         background: #464c5b;
-        padding: 5px 0;
+        padding: 10px 0;
         overflow: hidden;
     }
     .layout-ceiling-main {
         float: right;
-        margin: 5px 15px 0 0;
+        margin: 5px 20px 0 0;
         color: #2baee9;
     }
 </style>
@@ -73,7 +73,7 @@
           <!-- 顶部用户 -->
           <div class="layout-ceiling-main">
             <Poptip trigger="hover" placement="bottom-end" width="220" v-bind:title="'Hello! '+userInfo.user">
-              <Badge count="0"><Avatar v-bind:src="userInfo.src" icon="person" style="background-color: #2baee9"/></Badge>
+              <Badge count="0"><a><Avatar v-bind:src="userInfo.src" icon="person" style="background-color: #2baee9"/></a></Badge>
               <Dropdown><Icon type="arrow-down-b"></Icon></Dropdown>
               <div class="api" slot="content">
                 <Button v-on:click="logoutClick" size="small" icon="person">个人信息</Button>&nbsp;&nbsp;
@@ -84,7 +84,7 @@
           <!-- 顶部消息 -->
           <div class="layout-ceiling-main">
             <Poptip trigger="hover" placement="bottom-end" width="60">
-              <Badge dot><Avatar icon="ios-bell" style="background-color: #2baee9"/></Badge>
+              <Badge dot><a><Avatar icon="ios-bell" style="background-color: #2baee9"/></a></Badge>
               <div class="api" slot="content">
                 <Button v-on:click="logoutClick" size="small"><Icon type="log-out"></Icon>登出</Button>
               </div>

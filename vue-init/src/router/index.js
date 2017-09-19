@@ -4,7 +4,6 @@ import Layout from '@/components/layout'
 import service from '@/components/service.vue'
 import auth from '@/components/auth.vue'
 import login from '@/components/login.vue'
-import forgot_password from '@/components/forgot_password.vue'
 import { checkToken } from '../api/api';
 import store from '@/store'
 
@@ -49,11 +48,6 @@ const router = new Router({
       meta: {
         title: '登录'
       }
-    },
-    {
-      path: '/forgot_password',
-      name: 'forgot_password',
-      component: forgot_password
     }
   ]
 });
@@ -74,7 +68,7 @@ router.beforeEach((to, from, next) => {
     }).catch(res => {
       next('/login')
     });
-  } else if (!loginInfo && to.path != '/login'){
+  } else if (!loginInfo && to.path == '/'){
     next('/login')
   } else {
     next()
