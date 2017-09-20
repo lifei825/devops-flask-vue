@@ -3,7 +3,7 @@ from flask_restful import Resource, reqparse, request
 from flask import flash, redirect, Blueprint, current_app
 from flask_security import login_required, login_user, logout_user
 from .model import User, Permission, Groups
-from utils.permission import permisson_required, sso_required
+from utils.permission import permisson_required
 from utils.ext import db
 from flask_login import current_user
 import json
@@ -32,7 +32,7 @@ class Auth(Resource):
         token验证
         ---
         tags:
-        - AUTH
+        - LOGIN
         parameters:
           - in: header
             name: Authorization
@@ -63,7 +63,7 @@ class Auth(Resource):
         用户登录
         ---
         tags:
-        - AUTH
+        - LOGIN
         parameters:
           - in: formData
             name: email
@@ -104,14 +104,15 @@ class Auth(Resource):
                 resp = c.post('/auth', headers={'Content-Type': 'application/json'},
                               data=json.dumps({"username": email, "password": password}))
                 data = json.loads(resp.data.decode('utf8'))
-                print("data:", data)
+                if data.get('error'):
+                    raise ErrorCode(451, data.get('description', "Bad Request"))
 
             token = data.get('access_token', None)
             exp = jwt.decode(token, key=_secret).get("exp")
 
         except Exception as e:
             logging.error("get token error: %s." % str(e))
-            state = isinstance(e, ErrorCode) and e or ErrorCode(1, "unknown error:" + str(e))
+            state = isinstance(e, ErrorCode) and e or ErrorCode(451, "unknown error:" + str(e))
 
         return {'result': {'username': email, 'token': token, 'exp': exp}, 'state': state.message}, state.eid
 
@@ -250,5 +251,49 @@ class UserQuery(Resource):
         return {'result': doc, 'state': state.message}, state.eid
 
 
+class Group(Resource):
+    def __init__(self):
+        super(Group, self).__init__()
+
+    @jwt_required()
+    @permisson_required(Permission.LOGIN)
+    def get(self):
+        """
+            查询用户名的项目列表
+            ---
+            tags:
+            - GROUP
+            parameters:
+              - in: header
+                name: Authorization
+                type: string
+                required: true
+                description: "JWT <token>"
+              - in: query
+                name: gid
+                type: string
+            responses:
+              200:
+                description: 员工信息查询接口
+        """
+        doc = []
+        state = STATE_OK
+
+        try:
+            uid = current_identity.__dict__.get('id')
+            user = User.query.get(int(uid))
+            if not user:
+                raise STATE_EmptyData_ERR
+
+            groups = [role.groups for role in user.roles]
+            doc = [g.to_json() for g in set(groups)]
+
+            print('send doc', doc)
+
+        except Exception as e:
+            logging.error("get user info error: %s." % str(e))
+            state = isinstance(e, ErrorCode) and e or ErrorCode(1, "unknown error:" + str(e))
+
+        return {'result': doc, 'state': state.message}, state.eid
 
 

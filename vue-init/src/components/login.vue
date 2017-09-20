@@ -63,8 +63,7 @@
             <div class="layout-ceiling-left"><img src="../assets/logo.png" height="20px" width="20px"></div>
             <div class="layout-ceiling-main">
                 <a href="#">注册登录</a> |
-                <a href="#">帮助中心</a> |
-                <a href="#">安全中心</a> |
+                <a href="/apidoc">API文档</a> |
                 <a href="#">服务大厅</a>
             </div>
         </div>
@@ -97,7 +96,7 @@
             <Form ref="formInline" :model="formInline" :rules="ruleInline" show-message>
               <FormItem prop="mail">
                 <Input type="text" v-model="formInline.mail" placeholder="mail">
-                <Icon type="ios-person-outline" slot="prepend"></Icon>
+                <Icon type="email" slot="prepend"></Icon>
                 </Input>
               </FormItem>
               <FormItem>
@@ -176,6 +175,7 @@
         loginDisplay(name) {
           if (this.login.display) {
             this.login= {display: false, title: '重设密码'}
+            this.formInline.mail = null
           } else {
             this.login = {display: true, title: 'Super运维平台'}
           }

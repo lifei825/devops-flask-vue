@@ -1,6 +1,7 @@
 运维平台
 ==================
-前端基于vue iview框架, 后端flask做api
+前端基于vue iview框架, 后端flask做api<br>
+Demo: http://devops.feifeiwd.com:8080
 
 ## 功能特色
 统一资产信息源, 以此扩展如下功能:

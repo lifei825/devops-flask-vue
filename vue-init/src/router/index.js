@@ -2,6 +2,7 @@ import Vue from 'vue'
 import Router from 'vue-router'
 import Layout from '@/components/layout'
 import service from '@/components/service.vue'
+import group from '@/components/group'
 import auth from '@/components/auth.vue'
 import login from '@/components/login.vue'
 import { checkToken } from '../api/api';
@@ -21,7 +22,7 @@ const router = new Router({
       children: [
         {
           path: '/',
-          name: '服务器',
+          name: 'Overview',
           components: {
             default: service
           },
@@ -37,6 +38,16 @@ const router = new Router({
           meta: {
             title: 'Auth',
             auth: true
+          }
+        },
+        {
+          path: '/group',
+          name: '项目管理',
+          component: group,
+          meta: {
+            title: 'Auth',
+            auth: true,
+            parent: '权限管理'
           }
         }
       ]
@@ -72,7 +83,7 @@ router.beforeEach((to, from, next) => {
     next('/login')
   } else {
     next()
-    
+
   }
 });
 

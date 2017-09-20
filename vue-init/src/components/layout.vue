@@ -94,7 +94,7 @@
         <!-- 左侧菜单 -->
         <Row type="flex">
             <Col :span="spanLeft" class="layout-menu-left">
-                <Menu active-name="Overview" theme="dark" width="auto" v-on:on-select="change_menu_name" v-on:on-open-change="change_submenu_name" accordion>
+                <Menu :active-name="select_menu.sub" theme="dark" width="auto" v-on:on-select="change_menu_name" v-on:on-open-change="change_submenu_name" accordion>
                     <div class="layout-logo-left"></div>
 
                     <template v-for="menu in menus" v-if="menu.path.constructor != Array">
@@ -166,11 +166,11 @@
                 spanLeft: 5,
                 spanRight: 19,
                 select_menu: {
-                  sub: 'Overview',
+                  sub: this.$route.name,
                   default: '应用中心',
                   cache: '',
-                  show: '应用中心',
-                  single: ['Overview', '权限管理', '3']
+                  show: this.$route.meta.parent ? this.$route.meta.parent : '应用中心',
+                  single: ['Overview']
                 },
                 is_show: {auth: true},
                 menus: [
@@ -181,7 +181,7 @@
                   ]},
                   {name: '权限管理', icon:'ios-paper', path: [
                     {name: '用户管理', icon:'ios-navigate', path: '/'},
-                    {name: '项目管理', icon:'android-list', path: '/auth'}
+                    {name: '项目管理', icon:'android-list', path: '/group'}
                   ]}
                 ]
             }

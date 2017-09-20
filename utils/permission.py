@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from api.authentication.model import Role, User
+from api.authentication.model import Role, User, Permission
 from flask_security import SQLAlchemyUserDatastore, Security, login_user
 from functools import wraps
 from flask_login import current_user
@@ -10,6 +10,7 @@ import re
 from flask_security.forms import LoginForm
 import logging
 from utils.ErrorCode import *
+from flask_jwt import current_identity
 
 user_datastore = SQLAlchemyUserDatastore(db, User, Role)
 security = Security(datastore=user_datastore, register_form=LoginForm)
@@ -22,16 +23,17 @@ def permisson_required(permission):
         @wraps(f)
         def _deco(*args, **kwargs):
             print("self post", dict(request.values.items()))
-            gid = request.values.get("gid", None)
+            if permission == Permission.SUPER_ADMIN:
+                gid = 2
+
+            else:
+                gid = request.values.get("gid", 2)
+
             print("gid:", gid)
-            print("is auth:", current_user.is_authenticated)
-            # print("is active:", current_user.is_active, current_user.email)
+            uid = current_identity.__dict__.get('id')
+            user = User.query.get(int(uid))
 
-            if current_user.is_anonymous:
-                print("is anonymous")
-                abort(403)
-
-            if not current_user.can(gid, permission):
+            if not user.can(gid, abs(permission)):
                 print("permission 403")
                 abort(403)
             return f(*args, **kwargs)

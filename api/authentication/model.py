@@ -10,11 +10,12 @@ class Permission(object):
     EDITOR = 0x02
     OPERATOR = 0x04
     ADMIN = 0xff        # hex(255)
+    SUPER_ADMIN = -0xff
     PERMISSION_MAP = {
         LOGIN: ('login', 'Login user'),
         EDITOR: ('editor', 'Editor'),
         OPERATOR: ('op', 'Operator'),
-        ADMIN: ('admin', 'Super administrator')
+        ADMIN: ('admin', 'administrator'),
     }
 
 roles_users = db.Table(
@@ -35,7 +36,14 @@ class Groups(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255), unique=True)
     description = db.Column(db.String(255))
+    confirmed_at = db.Column(db.DateTime(), default=datetime.now())
     roles = db.relationship('Role', backref='groups', lazy='dynamic')
+
+    def to_json(self):
+        doc = self.__dict__
+        if "_sa_instance_state" in doc:
+            del doc["_sa_instance_state"]
+        return doc
 
 
 class User(db.Model, UserMixin):
@@ -54,12 +62,12 @@ class User(db.Model, UserMixin):
     login_count = db.Column(db.Integer)
 
     # 权限验证
-    def can(self, gid, permissions):
-        if (self.roles is None) or (gid is None):
+    def can(self, gid, permissions=Permission.LOGIN):
+        if self.roles is None:
             print("can false")
             return False
         # 判断是否在组中 [ r for r in self.roles if 组 == r.组]
-        permissions_list = [r.permissions for r in self.roles if r.groups_id == int(gid) or r.groups.name == "admin"]
+        permissions_list = [r.permissions for r in self.roles if r.groups_id == int(gid) or r.groups_id == 2]
         if permissions_list:
             all_perms = reduce(lambda x, y: x | y, permissions_list)
         else:
