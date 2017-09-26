@@ -63,7 +63,7 @@
             <div class="layout-ceiling-left"><img src="../assets/logo.png" height="20px" width="20px"></div>
             <div class="layout-ceiling-main">
                 <a href="#">注册登录</a> |
-                <a href="/apidoc">API文档</a> |
+                <a href="/apidocs">API文档</a> |
                 <a href="#">服务大厅</a>
             </div>
         </div>
@@ -174,7 +174,7 @@
         },
         loginDisplay(name) {
           if (this.login.display) {
-            this.login= {display: false, title: '重设密码'}
+            this.login= {display: false, title: '重设密码'};
             this.formInline.mail = null
           } else {
             this.login = {display: true, title: 'Super运维平台'}

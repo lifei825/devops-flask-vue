@@ -191,7 +191,7 @@
                 return this.spanLeft === 5 ? 14 : 24;
             },
             userInfo () {
-              return this.$store.getters.loginInfo
+              return this.$store.getters.loginInfo ? this.$store.getters.loginInfo : {user: 'Guest'}
             }
         },
         methods: {

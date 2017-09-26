@@ -21,7 +21,7 @@ security = Security(datastore=user_datastore, register_form=LoginForm)
 def permisson_required(permission):
     def decorator(f):
         @wraps(f)
-        def _deco(*args, **kwargs):
+        def _deco(self, *args, **kwargs):
             print("self post", dict(request.values.items()))
             if permission == Permission.SUPER_ADMIN:
                 gid = 2
@@ -29,14 +29,14 @@ def permisson_required(permission):
             else:
                 gid = request.values.get("gid", 2)
 
-            print("gid:", gid)
             uid = current_identity.__dict__.get('id')
-            user = User.query.get(int(uid))
+            self.user = User.query.get(int(uid))
+            login_user(self.user)
 
-            if not user.can(gid, abs(permission)):
+            if not self.user.can(gid, abs(permission)):
                 print("permission 403")
                 abort(403)
-            return f(*args, **kwargs)
+            return f(self, *args, **kwargs)
         return _deco
     return decorator
 

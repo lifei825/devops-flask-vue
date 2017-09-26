@@ -26,7 +26,7 @@ roles_users = db.Table(
 
 class Role(db.Model, RoleMixin):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(255), unique=True)
+    name = db.Column(db.String(255))
     permissions = db.Column(db.Integer, default=Permission.LOGIN)
     description = db.Column(db.String(255))
     groups_id = db.Column(db.Integer, db.ForeignKey('groups.id'))
@@ -43,6 +43,10 @@ class Groups(db.Model):
         doc = self.__dict__
         if "_sa_instance_state" in doc:
             del doc["_sa_instance_state"]
+
+        if doc.get('confirmed_at', None):
+            doc['confirmed_at'] = doc['confirmed_at'].strftime('%F %T')
+
         return doc
 
 
@@ -72,7 +76,7 @@ class User(db.Model, UserMixin):
             all_perms = reduce(lambda x, y: x | y, permissions_list)
         else:
             all_perms = 0
-        print("all_perms", all_perms)
+
         return all_perms & permissions == permissions
 
     def can_admin(self):

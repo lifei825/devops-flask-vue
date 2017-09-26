@@ -2,7 +2,7 @@
 from flask_restful import Resource, reqparse, request
 from flask import flash, redirect, Blueprint, current_app
 from flask_security import login_required, login_user, logout_user
-from .model import User, Permission, Groups
+from .model import User, Permission, Groups, Role
 from utils.permission import permisson_required
 from utils.ext import db
 from flask_login import current_user
@@ -11,6 +11,7 @@ import logging
 from utils.ErrorCode import *
 import jwt
 from flask_jwt import jwt_required, current_identity
+from utils.helper import Argument
 
 
 module = Blueprint('logout', __name__)
@@ -253,13 +254,17 @@ class UserQuery(Resource):
 
 class Group(Resource):
     def __init__(self):
+        self.parser = reqparse.RequestParser(argument_class=Argument)
+        self.parser.add_argument('id', type=int, required=False, location=['form', 'values'])
+        self.parser.add_argument('name', type=str, required=True, location=['form', 'values'], nullable=False, trim=True)
+        self.parser.add_argument('description', type=str, required=False, location=['form', 'values'], trim=True)
         super(Group, self).__init__()
 
     @jwt_required()
     @permisson_required(Permission.LOGIN)
     def get(self):
         """
-            查询用户名的项目列表
+            查询项目列表
             ---
             tags:
             - GROUP
@@ -280,20 +285,91 @@ class Group(Resource):
         state = STATE_OK
 
         try:
-            uid = current_identity.__dict__.get('id')
-            user = User.query.get(int(uid))
-            if not user:
-                raise STATE_EmptyData_ERR
+            is_super_admin = [r.__dict__ for r in self.user.roles if r.groups_id == 2]
+            if is_super_admin:
+                groups = Groups.query.all()
 
-            groups = [role.groups for role in user.roles]
+            else:
+                groups = [role.groups for role in self.user.roles]
+
             doc = [g.to_json() for g in set(groups)]
 
             print('send doc', doc)
 
         except Exception as e:
             logging.error("get user info error: %s." % str(e))
-            state = isinstance(e, ErrorCode) and e or ErrorCode(1, "unknown error:" + str(e))
+            state = isinstance(e, ErrorCode) and e or ErrorCode(451, "unknown error:" + str(e))
 
         return {'result': doc, 'state': state.message}, state.eid
 
+    @jwt_required()
+    @permisson_required(Permission.SUPER_ADMIN)
+    def post(self):
+        """
+            项目添加
+            ---
+            tags:
+            - USER
+            parameters:
+              - in: header
+                name: Authorization
+                type: string
+                required: true
+                description: "JWT <token>"
+              - in: formData
+                name: id
+                type: string
+                description: "项目id"
+              - in: formData
+                name: name
+                type: string
+                required: true
+                description: "项目名称"
+              - in: formData
+                name: description
+                type: string
+                description: "项目描述"
+            responses:
+              200:
+                description: 项目添加
+        """
+        state = STATE_OK
+        rs = True
+
+        try:
+            print("start post group")
+            data = self.parser.parse_args()
+            gid = data.get("id", None)
+            name = data.get("name", "no name")
+            description = data.get("description", None)
+            print("name:", name)
+            if not name:
+                print("not name")
+
+            print("post all:", request.values.__dict__, name, description, type(gid))
+
+            if gid:
+                group = Groups.query.get(gid)
+                group.name = name
+                group.description = description
+
+                db.session.add(group)
+                db.session.commit()
+
+            else:
+                group = Groups(name=name, description=description)
+                db.session.add(group)
+
+                for permissions, (role, desc) in Permission.PERMISSION_MAP.items():
+                    r = Role(name=role, description=desc, permissions=permissions, groups=group)
+                    db.session.add(r)
+
+                db.session.commit()
+
+        except Exception as e:
+            rs = False
+            logging.error("get user info error: %s." % str(e))
+            state = isinstance(e, ErrorCode) and e or ErrorCode(451, "unknown error:" + str(e))
+
+        return {'result': rs, 'state': state.message}, state.eid
 

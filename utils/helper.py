@@ -1,5 +1,6 @@
 import uuid
 import random
+from flask_restful import reqparse
 
 
 def identifying():
@@ -8,6 +9,18 @@ def identifying():
     part3 = part1 + part2
 
     return "".join(random.sample(part3, len(part3)))
+
+
+class Argument(reqparse.Argument):
+    """
+        重写reqparse的nullable参数为False时, 传空字符窜也报错
+    """
+    def convert(self, value, op):
+        if not self.nullable and not value:
+            raise ValueError('Must not be null!')
+
+        return super(Argument, self).convert(value, op)
+
 
 if __name__ == "__main__":
     for i in range(20):

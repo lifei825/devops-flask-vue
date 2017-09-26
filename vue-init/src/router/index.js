@@ -65,6 +65,7 @@ const router = new Router({
 
 router.beforeEach((to, from, next) => {
   let loginInfo = store.getters.loginInfo;
+  console.log(1111111, loginInfo)
 
   if (to.meta.auth && loginInfo) {
     let token = loginInfo.token;
@@ -79,9 +80,11 @@ router.beforeEach((to, from, next) => {
     }).catch(res => {
       next('/login')
     });
-  } else if (!loginInfo && to.path == '/'){
+  } else if (!loginInfo && to.meta.auth){
+    console.log('2c');
     next('/login')
   } else {
+    console.log('3c', to.path);
     next()
 
   }
