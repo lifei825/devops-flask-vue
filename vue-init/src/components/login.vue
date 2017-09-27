@@ -35,7 +35,7 @@
     margin: 0 auto;
     /*position: relative;*/
     width: 300px;
-    height: 700px;
+    height: 820px;
     padding-top: 150px;
     padding-bottom: 200px;
   }

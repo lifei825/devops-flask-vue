@@ -1,8 +1,8 @@
 import axios from 'axios'
 import Qs from 'qs'
 
-// export const baseUrl = '';
-export const baseUrl = 'http://127.0.0.1:8082';
+export const baseUrl = '';
+// export const baseUrl = 'http://127.0.0.1:8082';
 
 export const getUserInfo = (username) => {
   return axios({
@@ -35,12 +35,16 @@ export const checkToken = (token) => {
   })
 };
 
-export const getGroups = (token) => {
+export const getGroups = (token, page=1, pageSize=10) => {
   return axios({
     method: 'get',
     url: baseUrl + '/api/v1/group',
     headers: {
       'Authorization': 'JWT '+token
+    },
+    params: {
+      "page": page,
+      "pageSize": pageSize
     }
   })
 };

@@ -277,20 +277,36 @@ class Group(Resource):
               - in: query
                 name: gid
                 type: string
+              - in: query
+                name: page
+                type: string
+                description: 当前页
+              - in: query
+                name: pageSize
+                type: string
+                description: 每页显示量
             responses:
               200:
                 description: 员工信息查询接口
         """
         doc = []
         state = STATE_OK
+        groups_total = 0
 
         try:
+            page = int(request.values.get('page', 1))
+            page_size = int(request.values.get('pageSize', 10))
+
             is_super_admin = [r.__dict__ for r in self.user.roles if r.groups_id == 2]
             if is_super_admin:
-                groups = Groups.query.all()
+                groups_class = Groups.query.filter_by().order_by(Groups.id.desc()).paginate(
+                    page, page_size, error_out=False)
+                groups = groups_class.items
+                groups_total = groups_class.total
 
             else:
-                groups = [role.groups for role in self.user.roles]
+                groups = [role.groups for role in self.user.roles][(page-1)*page_size:page*page_size]
+                groups_total = len(groups)
 
             doc = [g.to_json() for g in set(groups)]
 
@@ -300,10 +316,11 @@ class Group(Resource):
             logging.error("get user info error: %s." % str(e))
             state = isinstance(e, ErrorCode) and e or ErrorCode(451, "unknown error:" + str(e))
 
-        return {'result': doc, 'state': state.message}, state.eid
+        return {'result': {'doc': doc, 'total': groups_total}, 'state': state.message}, state.eid
 
     @jwt_required()
-    @permisson_required(Permission.SUPER_ADMIN)
+    @permisson_required(Permission.LOGIN)
+    # @permisson_required(Permission.SUPER_ADMIN)
     def post(self):
         """
             项目添加

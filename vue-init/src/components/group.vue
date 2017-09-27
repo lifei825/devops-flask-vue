@@ -38,7 +38,7 @@
 
       <Modal
         v-model="addGroup"
-        title="添加项目"
+        :title="title"
         closable
         @on-ok="ok"
         @on-cancel="cancel">
@@ -67,8 +67,11 @@
                   desc: ''
                 },
                 addGroup: false,
+                title: '添加项目',
                 // 分页
                 total: 100,
+                page: 1,
+                pageSize: 10,
                 // 搜索框
                 searchValue: '',
                 selectValue: 'ip',
@@ -82,7 +85,8 @@
                     {
                         title: 'id',
                         key: 'id',
-                        sortable: true
+                        sortable: true,
+                        sortType: 'desc',
                     },
                     {
                         title: '名称',
@@ -133,67 +137,83 @@
         searchClick() {
           this.$Message.info(this.searchValue+" to "+this.selectValue)
         },
+        // api
         groupList() {
           let token = this.$store.getters.loginInfo.token;
-          getGroups(token).then((res) => {
-              this.data1 = res.data.result;
+          getGroups(token, this.page, this.pageSize).then((res) => {
+              this.data1 = res.data.result.doc;
+              this.total = res.data.result.total;
           }).catch(res => {
               this.$Message.error('请求失败', res.data.result.state);
           })
+        },
+        groupSave() {
+          let token = this.$store.getters.loginInfo.token;
+          postGroups(token, this.formItem).then((res) => {
+            console.log(res.data.result)
+          if (res.data.result) {
+            this.$Message.success('保存成功')
+          } else {
+            this.$Message.error('请求失败', res.data.state);
+          }
+          this.data1 = this.groupList();
+        }).catch(error => {
+            if(error.response)
+          {
+            switch (error.response.status) {
+              case 403:
+                this.$Message.error('请求失败: 没有权限')
+                break;
+              case 401:
+                this.$Message.error('请求失败: token过期')
+                break;
+              default:
+                this.$Message.error('请求失败:' + error.response.data.state)
+
+            }
+          } else {
+            this.$Message.error('请求失败: 服务器无法连接')
+          }
+        })
+          this.formItem.name = null
+          this.formItem.desc = null
+          this.formItem.id = 0
+
         },
         // table 事件
         select(selection, row) {
           console.log(selection[0].name, row.id, row.name)
         },
         edit(index) {
-          console.log(index, this.data1[index].name)
+          this.title = '编辑项目'
+          this.addGroup = true
+          this.formItem.id = this.data1[index].id
+          this.formItem.name = this.data1[index].name
+          this.formItem.desc = this.data1[index].description
+          console.log(index, this.data1[index].name, this.formItem)
         },
         remove(index) {
           console.log(index, this.data1[index].name)
         },
         // 分页 事件
         changePageSize(pageSize) {
+          this.pageSize = pageSize
+          this.data1 = this.groupList();
           console.log(pageSize)
         },
         changePage(page) {
+          this.page = page
+          this.data1 = this.groupList();
           console.log(page)
         },
         // 弹出框
         ok () {
-          console.log(this.formItem.name)
-          let token = this.$store.getters.loginInfo.token;
-          postGroups(token, this.formItem).then((res) => {
-            console.log(res.data.result)
-            if (res.data.result) {
-              this.$Message.success('创建成功')
-            } else {
-              this.$Message.error('请求失败', res.data.state);
-            }
-            this.data1 = this.groupList();
-          }).catch(error => {
-              if(error.response)
-            {
-              switch (error.response.status) {
-                case 403:
-                  this.$Message.error('请求失败: 没有权限')
-                  break;
-                case 401:
-                  this.$Message.error('请求失败: token过期')
-                  break;
-                default:
-                  this.$Message.error('请求失败:' + error.response.data.state)
-
-              }
-            } else {
-              this.$Message.error('请求失败: 服务器无法连接')
-            }
-          })
-          this.formItem.name = null
-          this.formItem.desc = null
+          this.groupSave()
         },
         cancel() {
           this.formItem.name = null
           this.formItem.desc = null
+          this.formItem.id = 0
           this.$Message.info('已取消')
         },
         groupAdd() {
