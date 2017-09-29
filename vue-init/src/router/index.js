@@ -45,7 +45,7 @@ const router = new Router({
           name: '项目管理',
           component: group,
           meta: {
-            title: 'Auth',
+            title: 'Group',
             auth: true,
             parent: '权限管理'
           }

@@ -12,6 +12,7 @@ from utils.ErrorCode import *
 import jwt
 from flask_jwt import jwt_required, current_identity
 from utils.helper import Argument
+from sqlalchemy import and_, or_
 
 
 module = Blueprint('logout', __name__)
@@ -296,6 +297,7 @@ class Group(Resource):
         try:
             page = int(request.values.get('page', 1))
             page_size = int(request.values.get('pageSize', 10))
+            keyword = request.values.get('keyword', None)
 
             is_super_admin = [r.__dict__ for r in self.user.roles if r.groups_id == 2]
             if is_super_admin:
@@ -308,7 +310,10 @@ class Group(Resource):
                 groups = [role.groups for role in self.user.roles][(page-1)*page_size:page*page_size]
                 groups_total = len(groups)
 
-            doc = [g.to_json() for g in set(groups)]
+            if keyword:
+                doc = [g.to_json() for g in set(groups) if keyword in g.name]
+            else:
+                doc = [g.to_json() for g in set(groups)]
 
             print('send doc', doc)
 
@@ -326,7 +331,7 @@ class Group(Resource):
             项目添加
             ---
             tags:
-            - USER
+            - GROUP
             parameters:
               - in: header
                 name: Authorization
@@ -390,3 +395,46 @@ class Group(Resource):
 
         return {'result': rs, 'state': state.message}, state.eid
 
+    @jwt_required()
+    @permisson_required(Permission.LOGIN)
+    # @permisson_required(Permission.SUPER_ADMIN)
+    def delete(self):
+        """
+            项目添加
+            ---
+            tags:
+            - GROUP
+            parameters:
+              - in: header
+                name: Authorization
+                type: string
+                required: true
+                description: "JWT <token>"
+              - in: formData
+                name: id
+                type: string
+                description: "项目id"
+            responses:
+              200:
+                description: 项目添加
+        """
+        state = STATE_OK
+        rs = True
+
+        try:
+            gid = int(request.values.get('id'))
+            if gid == 2:
+                raise ErrorCode(501, "无法删除超级管理组")
+
+            group = Groups.query.get(gid)
+
+            db.session.query(Role).filter(or_(Role.groups_id == gid, Role.groups_id == None)).delete()
+            db.session.delete(group)
+            db.session.commit()
+
+        except Exception as e:
+            rs = False
+            logging.error("get user info error: %s." % str(e))
+            state = isinstance(e, ErrorCode) and e or ErrorCode(451, "unknown error:" + str(e))
+
+        return {'result': rs, 'state': state.message}, state.eid

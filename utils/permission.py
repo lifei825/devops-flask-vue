@@ -36,6 +36,14 @@ def permisson_required(permission):
             if not self.user.can(gid, abs(permission)):
                 print("permission 403")
                 abort(403)
+            elif request.method != 'GET':
+                # 审计
+                print('{0}通过{1}方法,访问{2}, 参数: {3}'.format(self.user.username,
+                                                         request.method,
+                                                         request.path,
+                                                         dict(request.values.items())
+                                                         ))
+
             return f(self, *args, **kwargs)
         return _deco
     return decorator

@@ -13,14 +13,13 @@
       <Row type="flex" align="middle">
         <!-- 创建项目 -->
         <Col span="2">
-        <Button type="primary" shape="circle" @click="addGroup = true">添加项目</Button>
+        <Button type="primary" shape="circle" @click="addGroup=true;title='添加项目'">添加项目</Button>
         </Col>
         <!-- 搜索栏 -->
         <Col span="8" offset="14">
         <Input v-model="searchValue" >
         <Select v-model="selectValue" slot="prepend" style="width: 100px">
-          <Option value="ip">Ip地址</Option>
-          <Option value="idc">机房</Option>
+          <Option value="name">项目</Option>
         </Select>
         <Button slot="append" v-on:click="searchClick" icon="ios-search"></Button>
         </Input>
@@ -36,6 +35,7 @@
         </div>
       </div>
 
+      <!-- 修改或添加项目 -->
       <Modal
         v-model="addGroup"
         :title="title"
@@ -51,11 +51,24 @@
           </FormItem>
         </Form>
       </Modal>
+      <!-- 删除项目 确认 -->
+      <Modal v-model="delGroup" width="360">
+        <p slot="header" style="color:#f60;text-align:center">
+            <Icon type="information-circled"></Icon>
+            <span>删除确认</span>
+        </p>
+        <div style="text-align:center">
+            <p v-text="'是否删除: '+ delName"></p>
+        </div>
+        <div slot="footer">
+            <Button type="error" size="large" long @click="removeEnsure">删除</Button>
+        </div>
+      </Modal>
     </div>
 
 </template>
 <script>
-    import { getGroups, postGroups } from '../api/api';
+    import { getGroups, postGroups, deleteGroups } from '../api/api';
 
     export default {
         data () {
@@ -74,7 +87,11 @@
                 pageSize: 10,
                 // 搜索框
                 searchValue: '',
-                selectValue: 'ip',
+                selectValue: 'name',
+                // 删除项目
+                delGroup: false,
+                delIndex: 0,
+                delName: null,
                 // table
                 columns1: [
                     {
@@ -134,13 +151,28 @@
             }
         },
       methods: {
+        // 搜索
         searchClick() {
+          this.groupList(this.searchValue)
           this.$Message.info(this.searchValue+" to "+this.selectValue)
         },
         // api
-        groupList() {
+        groupDel(gid) {
           let token = this.$store.getters.loginInfo.token;
-          getGroups(token, this.page, this.pageSize).then((res) => {
+          deleteGroups(token, gid).then((res) => {
+            if(res.data.result) {
+              this.$Message.success('删除成功')
+            } else {
+              this.$Message.error('删除失败: ' + res.data.result.state);
+            }
+        }).catch(res => {
+            this.$Message.error('删除失败: ' + res.response.data.state);
+        })
+          this.delGroup = false
+        },
+        groupList(keyword=null) {
+          let token = this.$store.getters.loginInfo.token;
+          getGroups(token, this.page, this.pageSize, keyword).then((res) => {
               this.data1 = res.data.result.doc;
               this.total = res.data.result.total;
           }).catch(res => {
@@ -152,9 +184,9 @@
           postGroups(token, this.formItem).then((res) => {
             console.log(res.data.result)
           if (res.data.result) {
-            this.$Message.success('保存成功')
+            this.$Message.success('删除成功')
           } else {
-            this.$Message.error('请求失败', res.data.state);
+            this.$Message.error('请求失败: ' + res.data.state);
           }
           this.data1 = this.groupList();
         }).catch(error => {
@@ -193,7 +225,14 @@
           console.log(index, this.data1[index].name, this.formItem)
         },
         remove(index) {
+          this.delGroup = true
+          this.delIndex = this.data1[index].id
+          this.delName = this.data1[index].name
           console.log(index, this.data1[index].name)
+        },
+        removeEnsure() {
+          this.groupDel(this.delIndex)
+          this.data1 = this.groupList();
         },
         // 分页 事件
         changePageSize(pageSize) {
@@ -215,8 +254,6 @@
           this.formItem.desc = null
           this.formItem.id = 0
           this.$Message.info('已取消')
-        },
-        groupAdd() {
         }
       }
     }
