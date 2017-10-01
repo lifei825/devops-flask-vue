@@ -18,22 +18,22 @@ security = Security(datastore=user_datastore, register_form=LoginForm)
 # 权限装饰器
 
 
-def permisson_required(permission):
+def permission_required(permission):
     def decorator(f):
         @wraps(f)
         def _deco(self, *args, **kwargs):
             print("self post", dict(request.values.items()))
             if permission == Permission.SUPER_ADMIN:
-                gid = 2
+                self.gid = 2
 
             else:
-                gid = request.values.get("gid", 2)
+                self.gid = int(request.values.get("gid", 2))
 
             uid = current_identity.__dict__.get('id')
             self.user = User.query.get(int(uid))
             login_user(self.user)
 
-            if not self.user.can(gid, abs(permission)):
+            if not self.user.can(self.gid, abs(permission)):
                 print("permission 403")
                 abort(403)
             elif request.method != 'GET':
@@ -109,7 +109,8 @@ def sso_required(f):
 def authenticate(username, password):
     user = User.query.filter_by(email=username).first()
     if user and user.verify_password(password):
-        return user
+        if user.active:
+            return user
 
 
 # jwt 获取身份

@@ -6,13 +6,13 @@ from datetime import datetime
 
 
 class Permission(object):
-    LOGIN = 0X01
+    VIEW = 0X01
     EDITOR = 0x02
     OPERATOR = 0x04
     ADMIN = 0xff        # hex(255)
     SUPER_ADMIN = -0xff
     PERMISSION_MAP = {
-        LOGIN: ('login', 'Login user'),
+        VIEW: ('view', 'View'),
         EDITOR: ('editor', 'Editor'),
         OPERATOR: ('op', 'Operator'),
         ADMIN: ('admin', 'administrator'),
@@ -27,7 +27,7 @@ roles_users = db.Table(
 class Role(db.Model, RoleMixin):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255))
-    permissions = db.Column(db.Integer, default=Permission.LOGIN)
+    permissions = db.Column(db.Integer, default=Permission.VIEW)
     description = db.Column(db.String(255))
     groups_id = db.Column(db.Integer, db.ForeignKey('groups.id'))
 
@@ -67,7 +67,7 @@ class User(db.Model, UserMixin):
     login_count = db.Column(db.Integer)
 
     # 权限验证
-    def can(self, gid, permissions=Permission.LOGIN):
+    def can(self, gid, permissions=Permission.VIEW):
         if self.roles is None:
             print("can false")
             return False
@@ -96,5 +96,24 @@ class User(db.Model, UserMixin):
     # 验证password
     def verify_password(self, password):
         return check_password_hash(self.password_hash, password)
+
+    def to_json(self):
+        doc = self.__dict__
+        if "_sa_instance_state" in doc:
+            del doc["_sa_instance_state"]
+
+        if "password_hash" in doc:
+            del doc["password_hash"]
+
+        if doc.get('confirmed_at', None):
+            doc['confirmed_at'] = doc['confirmed_at'].strftime('%F %T')
+
+        if doc.get('current_login_at', None):
+            doc['current_login_at'] = doc['current_login_at'].split('.')[0]
+
+        if doc.get('last_login_at', None):
+            doc['last_login_at'] = doc['last_login_at'].split('.')[0]
+
+        return doc
 
 

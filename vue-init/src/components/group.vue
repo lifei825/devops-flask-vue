@@ -237,12 +237,12 @@
         // 分页 事件
         changePageSize(pageSize) {
           this.pageSize = pageSize
-          this.data1 = this.groupList();
+          this.data1 = this.groupList(this.searchValue);
           console.log(pageSize)
         },
         changePage(page) {
           this.page = page
-          this.data1 = this.groupList();
+          this.data1 = this.groupList(this.searchValue);
           console.log(page)
         },
         // 弹出框

@@ -3,7 +3,7 @@ from flask_restful import Resource, reqparse, request
 from flask import flash, redirect, Blueprint, current_app
 from flask_security import login_required, login_user, logout_user
 from .model import User, Permission, Groups, Role
-from utils.permission import permisson_required
+from utils.permission import permission_required
 from utils.ext import db
 from flask_login import current_user
 import json
@@ -130,9 +130,10 @@ class Users(Resource):
         super(Users, self).__init__()
 
     @jwt_required()
+    @permission_required(Permission.ADMIN)
     def get(self):
         """
-            员工信息查询接口
+            员工列表接口
             ---
             tags:
             - USER
@@ -142,24 +143,58 @@ class Users(Resource):
                 type: string
                 required: true
                 description: "JWT <token>"
+              - in: query
+                name: gid
+                type: string
+              - in: query
+                name: page
+                type: string
+                description: 当前页
+              - in: query
+                name: pageSize
+                type: string
+                description: 每页显示量
             responses:
               200:
-                description: 员工信息查询接口
+                description: 仅管理员可访问
         """
-        doc = {}
+        doc = []
         state = STATE_OK
+        users_total = 0
 
         try:
-            doc = current_identity.__dict__
-            del doc['password_hash']
-            del doc['_sa_instance_state']
-            del doc['confirmed_at']
+            page = int(request.values.get('page', 1))
+            page_size = int(request.values.get('pageSize', 10))
+            keyword = request.values.get('keyword', "")
+
+            # 如果是超级管理员可获取所有用户信息
+            if self.gid == 2:
+                users_class = User.query.filter(or_(User.username.like("%"+keyword+"%"),
+                                                    User.email.like("%"+keyword+"%"),
+                                                    User.phone.like("%"+keyword+"%"),
+                                                    User.job.like("%"+keyword+"%"),)
+                                                ).order_by(User.id.desc()).paginate(page, page_size, error_out=False)
+
+            # 否则获取指定项目下的所有用户
+            else:
+                users_class = User.query.join(User.roles).filter(
+                    and_(Role.groups_id == self.gid,
+                         or_(User.email.like("%"+keyword+"%"),
+                             User.phone.like("%"+keyword+"%"),
+                             User.username.like("%"+keyword+"%"),
+                             User.job.like("%"+keyword+"%"),))
+                ).order_by(User.id.desc()).paginate(page, page_size, error_out=False)
+
+            users = users_class.items
+            users_total = users_class.total
+
+            doc = [u.to_json() for u in set(users)]
 
         except Exception as e:
             logging.error("get user info error: %s." % str(e))
             state = isinstance(e, ErrorCode) and e or ErrorCode(1, "unknown error:" + str(e))
 
-        return {'result': doc, 'state': state.message}, state.eid
+        return {'result': {'doc': doc, 'total': users_total}, 'state': state.message}, state.eid
 
     @jwt_required()
     def post(self):
@@ -216,43 +251,6 @@ class Users(Resource):
         return {'result': rs, 'state': state.message}, state.eid
 
 
-class UserQuery(Resource):
-    def __init__(self):
-        super(UserQuery, self).__init__()
-
-    def get(self, nt_account):
-        """
-            指定账户员工信息查询接口
-            ---
-            tags:
-            - USER
-            parameters:
-              - in: path
-                name: nt_account
-                type: string
-                required: true
-                description: "nt_account "
-            responses:
-              200:
-                description: 指定员工信息查询接口
-        """
-        doc = {}
-        state = STATE_OK
-
-        try:
-            user = User.query.filter_by(username=nt_account).first()
-            if not user:
-                raise STATE_EmptyData_ERR
-
-            doc.update({'email': user.email, 'phone': user.phone})
-
-        except Exception as e:
-            logging.error("get user info error: %s." % str(e))
-            state = isinstance(e, ErrorCode) and e or ErrorCode(1, "unknown error:" + str(e))
-
-        return {'result': doc, 'state': state.message}, state.eid
-
-
 class Group(Resource):
     def __init__(self):
         self.parser = reqparse.RequestParser(argument_class=Argument)
@@ -262,7 +260,7 @@ class Group(Resource):
         super(Group, self).__init__()
 
     @jwt_required()
-    @permisson_required(Permission.LOGIN)
+    @permission_required(Permission.VIEW)
     def get(self):
         """
             查询项目列表
@@ -297,23 +295,21 @@ class Group(Resource):
         try:
             page = int(request.values.get('page', 1))
             page_size = int(request.values.get('pageSize', 10))
-            keyword = request.values.get('keyword', None)
+            keyword = request.values.get('keyword', "")
 
-            is_super_admin = [r.__dict__ for r in self.user.roles if r.groups_id == 2]
-            if is_super_admin:
-                groups_class = Groups.query.filter_by().order_by(Groups.id.desc()).paginate(
-                    page, page_size, error_out=False)
-                groups = groups_class.items
-                groups_total = groups_class.total
+            if self.gid == 2:
+                groups_class = Groups.query.filter(Groups.name.like('%{0}%'.format(keyword))).order_by(
+                    Groups.id.desc()).paginate(page, page_size, error_out=False)
 
             else:
-                groups = [role.groups for role in self.user.roles][(page-1)*page_size:page*page_size]
-                groups_total = len(groups)
+                groups_class = Groups.query.join(Role.groups).filter(
+                    and_(Groups.id.in_((r.groups_id for r in self.user.roles)),
+                         Groups.name.like("%"+keyword+"%"))).order_by(
+                    Groups.id.desc()).paginate(page, page_size, error_out=False)
 
-            if keyword:
-                doc = [g.to_json() for g in set(groups) if keyword in g.name]
-            else:
-                doc = [g.to_json() for g in set(groups)]
+            groups = groups_class.items
+            groups_total = groups_class.total
+            doc = [g.to_json() for g in set(groups)]
 
             print('send doc', doc)
 
@@ -324,8 +320,7 @@ class Group(Resource):
         return {'result': {'doc': doc, 'total': groups_total}, 'state': state.message}, state.eid
 
     @jwt_required()
-    @permisson_required(Permission.LOGIN)
-    # @permisson_required(Permission.SUPER_ADMIN)
+    @permission_required(Permission.SUPER_ADMIN)
     def post(self):
         """
             项目添加
@@ -362,11 +357,10 @@ class Group(Resource):
             print("start post group")
             data = self.parser.parse_args()
             gid = data.get("id", None)
-            name = data.get("name", "no name")
+            name = data.get("name", None)
             description = data.get("description", None)
-            print("name:", name)
             if not name:
-                print("not name")
+                raise STATE_PreconditionFailed
 
             print("post all:", request.values.__dict__, name, description, type(gid))
 
@@ -396,8 +390,7 @@ class Group(Resource):
         return {'result': rs, 'state': state.message}, state.eid
 
     @jwt_required()
-    @permisson_required(Permission.LOGIN)
-    # @permisson_required(Permission.SUPER_ADMIN)
+    @permission_required(Permission.SUPER_ADMIN)
     def delete(self):
         """
             项目添加

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from flask import Blueprint
 from flask_restful import Api
-from .view import Auth, Users, UserQuery, Group
+from .view import Auth, Users, Group
 
 
 def get_auth_resources():
@@ -12,7 +12,6 @@ def get_auth_resources():
     api.add_resource(Auth, '/login')
     api.add_resource(Users, '/user')
     api.add_resource(Group, '/group')
-    api.add_resource(UserQuery, '/user/<nt_account>')
 
     return auth_bp
 
