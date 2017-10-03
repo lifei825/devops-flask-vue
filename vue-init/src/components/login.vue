@@ -76,12 +76,12 @@
 
             <Form ref="formInline" :model="formInline" :rules="ruleInline" show-message>
               <FormItem prop="user">
-                <Input type="text" v-model="formInline.user" placeholder="Username">
+                <Input type="text" v-model="formInline.user" placeholder="Username" v-on:on-enter="handleSubmit('formInline')" autofocus>
                 <Icon type="ios-person-outline" slot="prepend"></Icon>
                 </Input>
               </FormItem>
               <FormItem prop="password">
-                <Input type="password" v-model="formInline.password" placeholder="Password">
+                <Input type="password" v-model="formInline.password" placeholder="Password" v-on:on-enter="handleSubmit('formInline')">
                 <Icon type="ios-locked-outline" slot="prepend"></Icon>
                 </Input>
               </FormItem>
@@ -113,7 +113,7 @@
     </div>
 </template>
 <script>
-    import { getUserInfo, userLogin } from '../api/api';
+    import { getUserInfo, userLogin } from '../api/auth';
 
     export default {
       data () {

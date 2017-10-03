@@ -1,8 +1,8 @@
 import axios from 'axios'
 import Qs from 'qs'
-
+import {baseUrl} from './config'
 // export const baseUrl = '';
-export const baseUrl = 'http://127.0.0.1:8082';
+// export const baseUrl = 'http://127.0.0.1:8082';
 
 export const getUserInfo = (username) => {
   return axios({
@@ -80,7 +80,24 @@ export const deleteGroups = (token, gid) => {
   })
 };
 
+export const getUsers = (token, gid=2, page=1, pageSize=10, keyword=null) => {
+  return axios({
+    method: 'get',
+    url: baseUrl + '/api/v1/user',
+    headers: {
+      'Authorization': 'JWT '+token
+    },
+    params: {
+      "gid": gid,
+      "page": page,
+      "pageSize": pageSize,
+      "keyword": keyword
+    }
+  })
+};
+
 export default {
+  getUsers,
   deleteGroups,
   postGroups,
   getGroups,

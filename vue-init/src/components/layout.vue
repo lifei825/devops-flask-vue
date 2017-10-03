@@ -177,10 +177,10 @@
                   {name: 'Overview', icon:'speedometer', path: '/'},
                   {name: '资产管理', icon:'ios-paper', path: [
                     {name: '服务器管理', icon:'ios-navigate', path: '/'},
-                    {name: 'IDC管理', icon:'android-list', path: '/auth'}
+                    {name: 'IDC管理', icon:'android-list', path: '/user'}
                   ]},
                   {name: '权限管理', icon:'ios-paper', path: [
-                    {name: '用户管理', icon:'ios-navigate', path: '/'},
+                    {name: '用户管理', icon:'ios-navigate', path: '/user'},
                     {name: '项目管理', icon:'android-list', path: '/group'}
                   ]}
                 ]

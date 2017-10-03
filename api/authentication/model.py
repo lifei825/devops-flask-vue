@@ -31,6 +31,16 @@ class Role(db.Model, RoleMixin):
     description = db.Column(db.String(255))
     groups_id = db.Column(db.Integer, db.ForeignKey('groups.id'))
 
+    def to_json(self):
+        doc = self.__dict__
+        if "_sa_instance_state" in doc:
+            del doc["_sa_instance_state"]
+
+        if doc.get('confirmed_at', None):
+            doc['confirmed_at'] = doc['confirmed_at'].strftime('%F %T')
+
+        return doc
+
 
 class Groups(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -69,7 +79,6 @@ class User(db.Model, UserMixin):
     # 权限验证
     def can(self, gid, permissions=Permission.VIEW):
         if self.roles is None:
-            print("can false")
             return False
         # 判断是否在组中 [ r for r in self.roles if 组 == r.组]
         permissions_list = [r.permissions for r in self.roles if r.groups_id == int(gid) or r.groups_id == 2]
@@ -99,6 +108,8 @@ class User(db.Model, UserMixin):
 
     def to_json(self):
         doc = self.__dict__
+        print("roles", self.roles)
+        print(doc)
         if "_sa_instance_state" in doc:
             del doc["_sa_instance_state"]
 
@@ -113,6 +124,11 @@ class User(db.Model, UserMixin):
 
         if doc.get('last_login_at', None):
             doc['last_login_at'] = doc['last_login_at'].split('.')[0]
+
+        if doc.get('roles', None):
+            doc['roles'] = [r.to_json() for r in doc['roles']]
+
+        print('json:', doc)
 
         return doc
 

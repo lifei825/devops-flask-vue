@@ -3,9 +3,9 @@ import Router from 'vue-router'
 import Layout from '@/components/layout'
 import service from '@/components/service.vue'
 import group from '@/components/group'
-import auth from '@/components/auth.vue'
+import user from '@/components/user/user'
 import login from '@/components/login.vue'
-import { checkToken } from '../api/api';
+import { checkToken } from '../api/auth';
 import store from '@/store'
 
 
@@ -32,11 +32,11 @@ const router = new Router({
           }
         },
         {
-          path: '/auth',
-          name: '权限管理',
-          component: auth,
+          path: '/user',
+          name: '用户管理',
+          component: user,
           meta: {
-            title: 'Auth',
+            title: 'User',
             auth: true
           }
         },

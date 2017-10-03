@@ -13,7 +13,7 @@ class Config(object):
 
     # cook保存到redis过期时间
     # PERMANENT_SESSION_LIFETIME = timedelta(seconds=600)
-    JWT_EXPIRATION_DELTA = timedelta(seconds=1800)
+    JWT_EXPIRATION_DELTA = timedelta(seconds=60 * 60 * 24 * 10)
 
     # SESSION_STORE = {'host': 'paas-test.asiainfo.com', 'port': 30487, 'db': 2, 'password': '7788'}
 

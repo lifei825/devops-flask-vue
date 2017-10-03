@@ -112,6 +112,10 @@ class Auth(Resource):
             token = data.get('access_token', None)
             exp = jwt.decode(token, key=_secret).get("exp")
 
+            uid = jwt.decode(token, key=_secret).get("identity")
+            user = User.query.get(int(uid))
+            login_user(user)
+
         except Exception as e:
             logging.error("get token error: %s." % str(e))
             state = isinstance(e, ErrorCode) and e or ErrorCode(451, "unknown error:" + str(e))
@@ -130,7 +134,7 @@ class Users(Resource):
         super(Users, self).__init__()
 
     @jwt_required()
-    @permission_required(Permission.ADMIN)
+    @permission_required(Permission.VIEW)
     def get(self):
         """
             员工列表接口
@@ -167,8 +171,10 @@ class Users(Resource):
             page_size = int(request.values.get('pageSize', 10))
             keyword = request.values.get('keyword', "")
 
+            print(1, page_size)
             # 如果是超级管理员可获取所有用户信息
             if self.gid == 2:
+                print(2, page_size)
                 users_class = User.query.filter(or_(User.username.like("%"+keyword+"%"),
                                                     User.email.like("%"+keyword+"%"),
                                                     User.phone.like("%"+keyword+"%"),
@@ -177,6 +183,7 @@ class Users(Resource):
 
             # 否则获取指定项目下的所有用户
             else:
+                print(page_size)
                 users_class = User.query.join(User.roles).filter(
                     and_(Role.groups_id == self.gid,
                          or_(User.email.like("%"+keyword+"%"),
@@ -187,8 +194,9 @@ class Users(Resource):
 
             users = users_class.items
             users_total = users_class.total
+            print("user:", users)
 
-            doc = [u.to_json() for u in set(users)]
+            doc = [u.to_json() for u in users]
 
         except Exception as e:
             logging.error("get user info error: %s." % str(e))
@@ -260,7 +268,7 @@ class Group(Resource):
         super(Group, self).__init__()
 
     @jwt_required()
-    @permission_required(Permission.VIEW)
+    @permission_required(Permission.VIEW, active=False)
     def get(self):
         """
             查询项目列表

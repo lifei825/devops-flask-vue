@@ -68,7 +68,7 @@
 
 </template>
 <script>
-    import { getGroups, postGroups, deleteGroups } from '../api/api';
+    import { getGroups, postGroups, deleteGroups } from '../api/auth';
 
     export default {
         data () {
@@ -153,6 +153,7 @@
       methods: {
         // 搜索
         searchClick() {
+          this.page = 1
           this.groupList(this.searchValue)
           this.$Message.info(this.searchValue+" to "+this.selectValue)
         },
@@ -166,7 +167,7 @@
               this.$Message.error('删除失败: ' + res.data.result.state);
             }
         }).catch(res => {
-            this.$Message.error('删除失败: ' + res.response.data.state);
+            this.$Message.error({content: '删除失败: ' + res.response.data.message, duration: 5});
         })
           this.delGroup = false
         },
@@ -176,7 +177,7 @@
               this.data1 = res.data.result.doc;
               this.total = res.data.result.total;
           }).catch(res => {
-              this.$Message.error('请求失败', res.data.result.state);
+              this.$Message.error('请求失败', res.response.data.message);
           })
         },
         groupSave() {

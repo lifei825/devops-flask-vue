@@ -18,7 +18,7 @@ security = Security(datastore=user_datastore, register_form=LoginForm)
 # 权限装饰器
 
 
-def permission_required(permission):
+def permission_required(permission, active=True):
     def decorator(f):
         @wraps(f)
         def _deco(self, *args, **kwargs):
@@ -31,9 +31,8 @@ def permission_required(permission):
 
             uid = current_identity.__dict__.get('id')
             self.user = User.query.get(int(uid))
-            login_user(self.user)
 
-            if not self.user.can(self.gid, abs(permission)):
+            if not self.user.can(self.gid, abs(permission)) and active:
                 print("permission 403")
                 abort(403)
             elif request.method != 'GET':
