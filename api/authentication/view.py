@@ -101,11 +101,13 @@ class Auth(Resource):
             email = request.values.get('email', None)
             password = request.values.get('password', None)
             _secret = current_app.config.get('SECRET_KEY')
+            print("identfied", email, password)
 
             with current_app.test_client() as c:
                 resp = c.post('/auth', headers={'Content-Type': 'application/json'},
                               data=json.dumps({"username": email, "password": password}))
                 data = json.loads(resp.data.decode('utf8'))
+                print("auth", data)
                 if data.get('error'):
                     raise ErrorCode(451, data.get('description', "Bad Request"))
 
@@ -120,7 +122,10 @@ class Auth(Resource):
             logging.error("get token error: %s." % str(e))
             state = isinstance(e, ErrorCode) and e or ErrorCode(451, "unknown error:" + str(e))
 
-        return {'result': {'username': email, 'token': token, 'exp': exp}, 'state': state.message}, state.eid
+        return {'result': {'username': email,
+                           'token': token,
+                           'exp': exp,
+                           'permission': Permission.PERMISSION_MAP}, 'state': state.message}, state.eid
 
 
 class Users(Resource):
@@ -128,6 +133,9 @@ class Users(Resource):
         self.parser = reqparse.RequestParser()
         self.parser.add_argument('user', type=str, required=True, location='form')
         self.parser.add_argument('passwd', type=str, required=True, location='form')
+
+        self.parser_post = reqparse.RequestParser()
+        self.parser_post.add_argument('roles', type=list, action='append', location=['form', 'values', 'json'])
 
         self.parser_get = reqparse.RequestParser()
         self.parser_get.add_argument('user', type=str, required=False, location='args')
@@ -149,14 +157,14 @@ class Users(Resource):
                 description: "JWT <token>"
               - in: query
                 name: gid
-                type: string
+                type: integer
               - in: query
                 name: page
-                type: string
+                type: integer
                 description: 当前页
               - in: query
                 name: pageSize
-                type: string
+                type: integer
                 description: 每页显示量
             responses:
               200:
@@ -171,19 +179,16 @@ class Users(Resource):
             page_size = int(request.values.get('pageSize', 10))
             keyword = request.values.get('keyword', "")
 
-            print(1, page_size)
             # 如果是超级管理员可获取所有用户信息
-            if self.gid == 2:
-                print(2, page_size)
+            if self.gid == 0:
                 users_class = User.query.filter(or_(User.username.like("%"+keyword+"%"),
                                                     User.email.like("%"+keyword+"%"),
                                                     User.phone.like("%"+keyword+"%"),
                                                     User.job.like("%"+keyword+"%"),)
-                                                ).order_by(User.id.desc()).paginate(page, page_size, error_out=False)
+                                                ).order_by(User.id.desc()).paginate(page, page_size, error_out=True)
 
             # 否则获取指定项目下的所有用户
             else:
-                print(page_size)
                 users_class = User.query.join(User.roles).filter(
                     and_(Role.groups_id == self.gid,
                          or_(User.email.like("%"+keyword+"%"),
@@ -194,9 +199,8 @@ class Users(Resource):
 
             users = users_class.items
             users_total = users_class.total
-            print("user:", users)
 
-            doc = [u.to_json() for u in users]
+            doc = [u.to_json(self.gid) for u in users]
 
         except Exception as e:
             logging.error("get user info error: %s." % str(e))
@@ -205,9 +209,10 @@ class Users(Resource):
         return {'result': {'doc': doc, 'total': users_total}, 'state': state.message}, state.eid
 
     @jwt_required()
+    @permission_required(Permission.VIEW)
     def post(self):
         """
-            员工信息修改接口
+            用户添加修改
             ---
             tags:
             - USER
@@ -218,6 +223,18 @@ class Users(Resource):
                 required: true
                 description: "JWT <token>"
               - in: formData
+                name: id
+                type: integer
+                description: "用户ID"
+              - in: formData
+                name: username
+                type: string
+                description: "用户名"
+              - in: formData
+                name: job
+                type: string
+                description: "职位"
+              - in: formData
                 name: phone
                 type: string
                 description: "手机"
@@ -225,6 +242,14 @@ class Users(Resource):
                 name: email
                 type: string
                 description: "邮箱"
+              - in: formData
+                name: active
+                type: string
+                description: "是否激活"
+              - in: formData
+                name: roles
+                type: array
+                description: "角色"
             responses:
               200:
                 description: 员工信息修改接口
@@ -233,24 +258,52 @@ class Users(Resource):
         state = STATE_OK
         rs = False
         try:
-            uid = current_identity.__dict__.get('id')
+            request_param = dict(request.values.items())
+            print("user post:", request_param)
+            uid = request.values.get("id", None)
+            username = request.values.get("username", None)
             phone = request.values.get("phone", None)
             email = request.values.get("email", None)
-            user = User.query.get(int(uid))
-            if phone or email:
-                if phone:
-                    user.phone = phone
+            job = request.values.get("job", None)
+            roles = request.values.get("roles", "").split(',')
+            print(roles, type(roles))
 
-                if email:
-                    user.email = email
+            if not username and not email:
+                raise STATE_PARAM_ERR
 
-                db.session.add(user)
-                db.session.commit()
+            if not uid:
+                user = User(username=username,
+                            email=email,
+                            phone=phone,
+                            job=job,
+                            active=True)
 
-                rs = True
+                password = current_app.config.get('PASSWORD_KEY')
+                user.password = password
 
             else:
-                raise STATE_PARAM_ERR
+                user = User.query.get(int(uid))
+                user.username = username,
+                user.email = email,
+                user.phone = phone,
+                user.job = job
+                user.active = True
+
+            if roles:
+                print("roles", roles)
+                for r in roles:
+                    role = Role.query.filter_by(groups_id=self.gid, permissions=int(r)).first()
+                    print("role s", role)
+                    if role not in user.roles:
+                        print("not role s")
+                        user.roles.append(role)
+
+                # user.roles
+            print("db sssss")
+            db.session.add(user)
+            db.session.commit()
+
+            rs = True
 
         except Exception as e:
             logging.error("get user info error: %s." % str(e))
@@ -305,7 +358,7 @@ class Group(Resource):
             page_size = int(request.values.get('pageSize', 10))
             keyword = request.values.get('keyword', "")
 
-            if self.gid == 2:
+            if self.gid == 2 and [r for r in self.user.roles if r.groups_id == 2]:
                 groups_class = Groups.query.filter(Groups.name.like('%{0}%'.format(keyword))).order_by(
                     Groups.id.desc()).paginate(page, page_size, error_out=False)
 

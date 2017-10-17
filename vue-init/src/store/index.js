@@ -9,7 +9,8 @@ export default new Vuex.Store({
     loginInfo: {
       token: null,
       user: 'Guest',
-      src: ''
+      src: '',
+      roles: []
     },
     todos: [
       {id:1, text: '1 text', done: true},
@@ -26,6 +27,7 @@ export default new Vuex.Store({
       return state.loginInfo
     }
   },
+  // Mutation同步更改 Vuex 的 store 中的状态, 组件中使用 this.$store.commit('xxx') 提交 mutation
   mutations: {
     save_token (state, loginInfo) {
       state.loginInfo = loginInfo;
@@ -36,6 +38,7 @@ export default new Vuex.Store({
       localStorage.removeItem('loginInfo')
     }
   },
+  // Action 可以包含任意异步操作, 组件中使用 this.$store.dispatch('xxx') 分发 action
   actions: {
     save_token ({ commit }, loginInfo) {
       commit('save_token', loginInfo)

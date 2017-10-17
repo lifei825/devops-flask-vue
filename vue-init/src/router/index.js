@@ -1,7 +1,8 @@
 import Vue from 'vue'
 import Router from 'vue-router'
 import Layout from '@/components/layout'
-import service from '@/components/service.vue'
+import server from '@/components/resource/server.vue'
+import serverGroup from '@/components/server_group/server_group.vue'
 import group from '@/components/group'
 import user from '@/components/user/user'
 import login from '@/components/login.vue'
@@ -24,10 +25,10 @@ const router = new Router({
           path: '/',
           name: 'Overview',
           components: {
-            default: service
+            default: server
           },
           meta: {
-            title: 'Server',
+            title: 'Overview',
             auth: true
           }
         },
@@ -37,7 +38,8 @@ const router = new Router({
           component: user,
           meta: {
             title: 'User',
-            auth: true
+            auth: true,
+            parent: '权限管理'
           }
         },
         {
@@ -48,6 +50,26 @@ const router = new Router({
             title: 'Group',
             auth: true,
             parent: '权限管理'
+          }
+        },
+        {
+          path: '/server',
+          name: '服务器管理',
+          component: server,
+          meta: {
+            title: 'Server',
+            auth: true,
+            parent: '资产管理'
+          }
+        },
+        {
+          path: '/server_group',
+          name: '服务器分组',
+          component: serverGroup,
+          meta: {
+            title: 'ServerGroup',
+            auth: true,
+            parent: '资产管理'
           }
         }
       ]

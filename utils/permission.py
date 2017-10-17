@@ -23,11 +23,13 @@ def permission_required(permission, active=True):
         @wraps(f)
         def _deco(self, *args, **kwargs):
             print("self post", dict(request.values.items()))
+            self.gid = request.values.get("gid", 2)
+
             if permission == Permission.SUPER_ADMIN:
                 self.gid = 2
 
             else:
-                self.gid = int(request.values.get("gid", 2))
+                self.gid = int(self.gid) if self.gid else 2
 
             uid = current_identity.__dict__.get('id')
             self.user = User.query.get(int(uid))

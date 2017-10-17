@@ -96,6 +96,24 @@ export const getUsers = (token, gid=2, page=1, pageSize=10, keyword=null) => {
   })
 };
 
+export const postUsers = (token, data) => {
+  let l = new Array()
+  for (let r of data.roles) {
+    l.push(r)
+  }
+  delete data.roles
+  data["roles"] = l.join()
+  
+  return axios({
+    method: 'post',
+    url: baseUrl + '/api/v1/user',
+    headers: {
+      'Authorization': 'JWT '+token,
+      'Content-Type': 'application/x-www-form-urlencoded'
+    },
+    data: Qs.stringify(data)
+  })
+};
 export default {
   getUsers,
   deleteGroups,

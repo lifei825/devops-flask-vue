@@ -176,12 +176,18 @@
                 menus: [
                   {name: 'Overview', icon:'speedometer', path: '/'},
                   {name: '资产管理', icon:'ios-paper', path: [
-                    {name: '服务器管理', icon:'ios-navigate', path: '/'},
-                    {name: 'IDC管理', icon:'android-list', path: '/user'}
+                    {name: '服务器列表', icon:'ios-navigate', path: '/server'},
+                    {name: 'IDC管理', icon:'android-list', path: '/user'},
+                    {name: '服务器分组', icon:'android-list', path: '/server_group'}
                   ]},
                   {name: '权限管理', icon:'ios-paper', path: [
                     {name: '用户管理', icon:'ios-navigate', path: '/user'},
                     {name: '项目管理', icon:'android-list', path: '/group'}
+                  ]},
+                  {name: '服务器操作', icon:'ios-paper', path: [
+                    {name: '代码发布', icon:'ios-navigate', path: '/user'},
+                    {name: 'Pipeline', icon:'android-list', path: '/group'},
+                    {name: '批量操作', icon:'android-list', path: '/group'}
                   ]}
                 ]
             }

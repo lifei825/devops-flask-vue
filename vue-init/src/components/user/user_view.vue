@@ -39,7 +39,7 @@
       <Row>
         <Col span="5" offset="1">角色:</Col>
         <template v-for="role, index in infoUsers.roles">
-            <span v-text="(index+1)+'.'+role.name+';'"></span>&nbsp;
+            <span v-text="(index+1)+'.'+constRoles[role][1]+';'"></span>&nbsp;
         </template>
       </Row>
       <br>
@@ -63,6 +63,7 @@
         <span v-text="infoUsers.current_login_ip"></span>
       </Row>
       <br>
+
     </div>
     <div slot="footer">
       <Button type="ghost" size="large" long @click="closeUserInfo">关闭</Button>
@@ -74,6 +75,11 @@
 <script>
   export default {
     props: ['viewUsers', 'infoUsers'],
+    computed: {
+      constRoles () {
+        return this.$store.getters.loginInfo.roles
+      }
+    },
     methods: {
       closeUserInfo() {
         this.$emit('closeViewUsers')

@@ -82,6 +82,7 @@ class User(db.Model, UserMixin):
             return False
         # 判断是否在组中 [ r for r in self.roles if 组 == r.组]
         permissions_list = [r.permissions for r in self.roles if r.groups_id == int(gid) or r.groups_id == 2]
+        print("can:", permissions_list, gid)
         if permissions_list:
             all_perms = reduce(lambda x, y: x | y, permissions_list)
         else:
@@ -106,10 +107,10 @@ class User(db.Model, UserMixin):
     def verify_password(self, password):
         return check_password_hash(self.password_hash, password)
 
-    def to_json(self):
+    def to_json(self, gid):
         doc = self.__dict__
-        print("roles", self.roles)
-        print(doc)
+        doc['roles'] = self.roles
+        # print(self.username, self.roles)
         if "_sa_instance_state" in doc:
             del doc["_sa_instance_state"]
 
@@ -126,9 +127,7 @@ class User(db.Model, UserMixin):
             doc['last_login_at'] = doc['last_login_at'].split('.')[0]
 
         if doc.get('roles', None):
-            doc['roles'] = [r.to_json() for r in doc['roles']]
-
-        print('json:', doc)
+            doc['roles'] = [str(r.permissions) for r in doc['roles'] if r.groups_id == gid]
 
         return doc
 

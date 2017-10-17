@@ -151,7 +151,8 @@
                 this.$store.dispatch('save_token', {
                   'user': res.data.result.username,
                   'token': res.data.result.token,
-                  'src': res.data.result.src
+                  'src': res.data.result.src,
+                  'roles': res.data.result.permission
                 });
                 this.$Message.success('提交成功!');
                 this.$router.push('/');
