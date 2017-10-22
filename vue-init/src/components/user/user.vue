@@ -228,6 +228,7 @@
         this.infoUser = this.data1[index]
       },
       closeViewUser() {
+        console.log("zhu el:", this.$el);
         this.viewUser = !this.viewUser
       },
       edit(index) {
@@ -252,7 +253,9 @@
         this.infoUser['gid'] = this.selectGid
         this.userPost()
         // 保存后要更新user列表 否则roles列表里的数据会错误
-        this.userList();
+//        this.userList();
+        let selt = this;
+        setTimeout(function () {self.userList()}, 5000)
       },
       cancelSaveUser() {
         this.isEditUser = !this.isEditUser

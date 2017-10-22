@@ -6,6 +6,7 @@ import serverGroup from '@/components/server_group/server_group.vue'
 import group from '@/components/group'
 import user from '@/components/user/user'
 import login from '@/components/login.vue'
+import chart from '@/components/chart/chart.vue'
 import { checkToken } from '../api/auth';
 import store from '@/store'
 
@@ -52,6 +53,7 @@ const router = new Router({
             parent: '权限管理'
           }
         },
+        // 资源管理
         {
           path: '/server',
           name: '服务器管理',
@@ -71,7 +73,18 @@ const router = new Router({
             auth: true,
             parent: '资产管理'
           }
-        }
+        },
+        // 图表
+        {
+          path: '/chart',
+          name: '图表2',
+          component: chart,
+          meta: {
+            title: 'chart',
+            auth: true,
+            parent: '图表'
+          }
+        },
       ]
     },
     {

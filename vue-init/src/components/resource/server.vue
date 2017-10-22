@@ -32,6 +32,8 @@
 
 
       <Table :columns="columns1" :data="data1"></Table>
+      <br>
+      <!--<Button type="primary" size="large" @click="serverUpdate"><Icon type="ios-download-outline"></Icon> 更新</Button>-->
     </div>
 </template>
 <script>
@@ -48,12 +50,25 @@
                 selectGid: null,
                 columns1: [
                     {
+                        type: 'selection',
+                        width: 60,
+                        align: 'center'
+                    },
+                    {
                         title: '主机名',
                         key: 'hostname'
                     },
                     {
-                        title: '外网',
-                        key: 'outside'
+                        title: 'ip地址',
+                        key: 'ip_address',
+                        width: '150px',
+                        render: (h, params) => {
+                          const row = params.row;
+                          const intranet = params.row.intranet != undefined ? params.row.intranet+' (外)' : '';
+                          const outside = params.row.outside != undefined ? params.row.outside+' (内)' : '';
+                          console.log("ip address:", row, outside)
+                          return h('div', [h('span', outside),h('br'), h('span', intranet)])
+                        }
                     },
                     {
                         title: 'IDC',
@@ -69,12 +84,12 @@
                     },
                     {
                         title: '配置',
-                        key: 'config',
-                        width: '150px'
+                        key: 'config'
                     },
                     {
                         title: '状态',
                         key: 'state',
+                        width: '125px',
                         render: (h, params) => {
                           const row = params.row;
                           const color = row.state === 1 ? 'green' : row.state === 2 ? 'red' : 'gray';
@@ -111,7 +126,8 @@
                 data1: [
                     {
                         hostname: 'web',
-                        outside: '192.168.1.110',
+                        intranet: '192.168.123.110',
+                        outside: '10.1.1.2',
                         idc: '阿里云',
                         area: '香港C区',
                         role: 'nginx',

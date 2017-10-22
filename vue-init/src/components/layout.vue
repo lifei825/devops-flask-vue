@@ -188,7 +188,10 @@
                     {name: '代码发布', icon:'ios-navigate', path: '/user'},
                     {name: 'Pipeline', icon:'android-list', path: '/group'},
                     {name: '批量操作', icon:'android-list', path: '/group'}
-                  ]}
+                  ]},
+                  {name: '图表', icon:'ios-paper', path: [
+                    {name: '图表2', icon:'ios-navigate', path: '/chart'},
+                  ]},
                 ]
             }
         },

@@ -82,6 +82,7 @@
     },
     methods: {
       closeUserInfo() {
+        console.log("zujian el:", this.$el);
         this.$emit('closeViewUsers')
       }
     }
